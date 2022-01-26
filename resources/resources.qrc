@@ -1,0 +1,14 @@
+<RCC>
+  <qresource prefix="/">
+    <file>up.png</file>
+    <file>down.png</file>
+    <file>go-down-symbolic.symbolic.png</file>
+    <file>go-up-symbolic.symbolic.png</file>
+    <file>anti-clock-wise.png</file>
+    <file>clock-wise.png</file>
+    <file>disable.png</file>
+    <file>stop.png</file>
+    <file>accept.png</file>
+    <file>main_icon.png</file>
+  </qresource>
+</RCC>

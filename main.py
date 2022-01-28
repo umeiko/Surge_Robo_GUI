@@ -1,5 +1,6 @@
 from mainwindow import Ui_MainWindow
 from robot_control import Robot
+from joystick_control import joystick_manager
 import mainwindow
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow
@@ -8,6 +9,7 @@ from robot_control import Robot
 
 main_window = Ui_MainWindow()
 SurgRobot = Robot()
+JoyStick = joystick_manager()
 robo_options = {
     "temp_ports_list":[],
 }
@@ -36,9 +38,10 @@ def func_for_select_port(*args):
     else:
         SurgRobot.close_robot_port()
     print(index)
-    
+
+
 def func_for_show_joysticks(*args):
-    pass
+    joys = 
 
 def func_for_select_joystick(*args):
     pass

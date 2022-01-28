@@ -21,7 +21,7 @@ def spd_map(map_in=[-1,1], map_out=[-3600, 3600]):
     return k, b
 
 
-class joystick_mangager():
+class joystick_manager():
     def __init__(self, robot) -> None:
         self.joy = None
         self.thread = None
@@ -42,7 +42,7 @@ class joystick_mangager():
         return joy_names
 
     def config_joystick(self):
-        self.thread.bond_axis_func(0, 0,)
+        self.thread.bond_button_func(0, print("hi"))
         pass
 
 

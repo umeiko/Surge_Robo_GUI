@@ -9,9 +9,10 @@ from robot_control import Robot
 
 main_window = Ui_MainWindow()
 SurgRobot = Robot()
-JoyStick = joystick_manager()
+JoyStick = joystick_manager(SurgRobot)
 robo_options = {
     "temp_ports_list":[],
+    "temp_joys_list":[],
 }
 
 def func_for_show_ports(*args):
@@ -37,20 +38,34 @@ def func_for_select_port(*args):
         SurgRobot.open_robot_port(SurgRobot.port_list[index-1])
     else:
         SurgRobot.close_robot_port()
-    print(index)
 
 
 def func_for_show_joysticks(*args):
-    joys = 
+    joys = JoyStick.scan_joystick()
+    for k, i in enumerate(robo_options["temp_joys_list"]):
+        if i not in joys:
+            main_window.joystick_select.removeItem(k+1)
+    
+    for  i in joys:
+        if i not in robo_options["temp_joys_list"]:
+            main_window.joystick_select.addItem(i)
+    robo_options["temp_joys_list"] = joys
+    main_window.joystick_select.showPopup()
+
 
 def func_for_select_joystick(*args):
-    pass
+    index = args[0]
+    if index > 0:
+        JoyStick.start_joystick(index-1)
+    else:
+        JoyStick.close_joystick()
 
 
 def bind_methods():
     main_window.com_select.mousePressEvent = func_for_show_ports
     main_window.com_select.currentIndexChanged.connect(func_for_select_port) 
-    # 展示串口
+    main_window.joystick_select.mousePressEvent = func_for_show_joysticks
+    main_window.joystick_select.currentIndexChanged.connect(func_for_select_joystick)     
     main_window.all_stop_button.clicked.connect(func_for_show_ports)
 
     pass

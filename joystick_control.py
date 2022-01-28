@@ -29,6 +29,7 @@ class joystick_manager():
         pass
     
     def start_joystick(self, id):
+        """开始手柄线程"""
         if self.thread is not None:
             self.thread.isRunning = False
             del self.joy
@@ -37,12 +38,20 @@ class joystick_manager():
         self.config_joystick()
         self.thread.start()
     
+    def close_joystick(self):
+        """关闭手柄线程"""
+        if self.thread is not None:
+            self.thread.isRunning = False
+            del self.joy
+            self.thread = None
+    
     def scan_joystick(self):
-        joy_names = [i.get_name() for i in range(joystick.get_count())]
+        """扫描连接到系统上的手柄"""
+        joy_names = [joystick.Joystick(i).get_name() for i in range(joystick.get_count())]
         return joy_names
 
     def config_joystick(self):
-        self.thread.bond_button_func(0, print("hi"))
+        self.thread.bond_button_func(0, lambda: print("hi"))
         pass
 
 

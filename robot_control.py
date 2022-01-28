@@ -1,11 +1,14 @@
+from pickle import NONE
 import serial
 import serial.tools.list_ports
 import struct
+import threading
 import time
 
+
 class Robot():
-    def __init__(self, COM_num=None, lock=None):
-        self.lock = lock
+    def __init__(self, COM_num=None):
+        self.lock = threading.Lock()
         self.ser = serial.Serial()
         self.ser.baudrate = 115200
         self.ser.timeout = 5

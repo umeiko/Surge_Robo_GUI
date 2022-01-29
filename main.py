@@ -1,15 +1,24 @@
 from mainwindow import Ui_MainWindow
+from dialog import Ui_Dialog
 from robot_control import Robot
 from joystick_control import joystick_manager
 import sys
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 
 from robot_control import Robot
 
 main_window = Ui_MainWindow()
+dialog_1    = Ui_Dialog()
+
 QueryTimer = QTimer()
 QueryTimer.setInterval(10)
+app = QApplication(sys.argv)
+w = QMainWindow()
+dia    = QDialog()
+dialog_1.setupUi(dia)
+main_window.setupUi(w)
+
 
 SurgRobot = Robot(main_window=main_window)
 JoyStick = joystick_manager(SurgRobot, main_window)
@@ -78,6 +87,23 @@ def func_for_gearlevel_change(*args):
     print(SurgRobot.gear_level)
     pass
 
+
+def func_for_open_serial_test(*args):
+    pass
+
+def func_for_close_serial_test(*args):
+    pass
+
+def func_for_print_args(*args):
+    print(args)
+
+
+def func_for_menu(*args):
+    text = args[0].text()
+    if text == "串口调试":
+        dia.exec() 
+        
+
 def bind_methods():
     """为各个小部件绑定函数"""
     # com_select
@@ -90,8 +116,14 @@ def bind_methods():
     main_window.gear_level_slider.setPageStep(1)
     main_window.gear_level_slider.valueChanged.connect(func_for_gearlevel_change)
 
+    main_window.menu.triggered.connect(func_for_menu)
+
+    dialog_1.pushButton.clicked.connect(lambda: print("hi"))
+    dia.showEvent = func_for_open_serial_test
+    dia.closeEvent = func_for_close_serial_test
+    
     main_window.all_stop_button.clicked.connect(save_options) 
-    main_window.cath_up_button.clicked.connect(lambda: SurgRobot.step(0, 1))  
+    main_window.cath_up_button.clicked.connect(lambda: dia.exec())  
     pass
 
 def close_methods(*args):
@@ -126,13 +158,15 @@ def load_options():
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    w = QMainWindow()
-    main_window.setupUi(w)
+    # app = QApplication(sys.argv)
+    # w = QMainWindow()
+
+    # main_window.setupUi(w)
     main_window.speed_UI_list = [main_window.cath_speed_lcd, 
                                  main_window.wire_speed_lcd,
                                  main_window.wire_rotSpeed_lcd]
     
+
     bind_methods()
     init_methods()
     w.show()

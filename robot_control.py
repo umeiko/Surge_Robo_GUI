@@ -109,6 +109,7 @@ class Robot():
         self.set_speed_freq(id, 0)
     
     def step(self, id, dis, spd=5):
+        """通过线程定时定速运转机器人"""
         tim = dis / spd
         thr = threading.Thread(target=lambda: self.run_spd_time(id, 3200, tim))
         thr.start()

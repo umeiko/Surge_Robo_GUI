@@ -56,7 +56,7 @@ class Robot():
         """设置步进电机的速度"""
         freq = self.gear_level * freq
         if self.main_window is not None:
-            self.main_window.speed_UI_list[id].display(freq)
+            self.main_window.speed_UI_list[id].display(int(freq))
         msg = f":{id} {round(freq, 2)}\r\n".encode()
         if self.ser.isOpen():
             self.write_lock.acquire()
@@ -103,6 +103,16 @@ class Robot():
             self.gear_level = 0.2
         return self.gear_level
     
+    def run_spd_time(self, id, spd, time_s):
+        self.set_speed_freq(id, spd)
+        time.sleep(time_s)
+        self.set_speed_freq(id, 0)
+    
+    def step(self, id, dis, spd=5):
+        tim = dis / spd
+        thr = threading.Thread(target=lambda: self.run_spd_time(id, 3200, tim))
+        thr.start()
+        
 
 
 

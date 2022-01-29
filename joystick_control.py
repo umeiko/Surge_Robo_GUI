@@ -11,9 +11,11 @@ joystick.init()
 
 joy_config = {
     "default" : {
-        "axis"     : [(0, 1, -1, 1, -3600, 3600),
-                      (1, 3, -1, 1, -3600, 3600),
-                      (2, 4, -1, 1,  0, 3200),],
+        "axis"      : [(0, 1, -1, 1, -3600, 3600),
+                       (1, 3, -1, 1, -3600, 3600),
+                       (2, 4, -1, 1, 0, -3600),
+                       (2, 5, -1, 1, 0, 3600),
+                      ],
         "button"   : [(6, "plus_gaer"), (7, "minus_gear")],
     }
 }
@@ -35,6 +37,21 @@ def spd_map_func(map_in=[-1,1], map_out=[-3600, 3600]):
     b = (map_out[0] - k*map_in[0])
     return k, b
 
+def spd_map_func_(maps=[-1, 1, -3600, 3600]):
+    """将速度从区间a线性映射到区间b，返回函数的斜率k和偏置b"""
+    k = (maps[3] - maps[2]) / (maps[1] - maps[0])
+    b = (maps[2] - k*maps[0])
+    return k, b
+
+def axis_shift_cancelling(axis_value, fix_value=0.05):
+    """消除轴的零漂"""
+    if fix_value > axis_value  > -fix_value:
+        axis_value  = 0
+    elif -1. < axis_value  < -1 + fix_value:
+        axis_value  = -1
+    elif 1. > axis_value  > 1 - fix_value:
+        axis_value  = 1
+    return axis_value
 
 
 class joystick_manager():
@@ -68,11 +85,24 @@ class joystick_manager():
         return joy_names
 
     def config_joystick(self):
+        moto_axes = [[], [], [], [], []]
         for i in joy_config["default"]["axis"]:
-            self.thread.bond_axis_func(i[0], i[1], (i[2], i[3], i[4], i[5]))
+            moto_axes[i[0]].append(i)
+
+        for k, i in enumerate(moto_axes):
+            if len(i) == 1:
+                j = i[0]
+                self.thread.bond_axis_func(j[0], j[1], [*j[2::]])
+            elif len(i) == 2:
+                axis_1 = i[0][1]
+                map_1  = [*i[0][2::]]
+                axis_2 = i[1][1]
+                map_2  = [*i[1][2::]]
+                self.thread.bond_double_axes_func(k, axis_1, axis_2, map_1, map_2)
+                
         self.thread.bond_button_func(6, lambda: minus_gaer(self.robot, self.main_window.gear_level_slider))
         self.thread.bond_button_func(7, lambda: plus_gaer(self.robot, self.main_window.gear_level_slider))
-        pass
+        
 
 
 class thread_joystick(threading.Thread):
@@ -87,7 +117,7 @@ class thread_joystick(threading.Thread):
         self.main_window = main_window
         self.axes_list = [0 for _ in range(self.joy.get_numaxes())]
         self.button_list = [0 for _ in range(self.joy.get_numaxes())]
-        self.axes_ctrl_funcs =   [None for _ in range(self.joy.get_numaxes())]
+        self.axes_ctrl_funcs =   []
         self.button_ctrl_funcs = [None for _ in range(self.joy.get_numbuttons())]
         self.isRunning = False
     
@@ -111,13 +141,15 @@ class thread_joystick(threading.Thread):
 
     def axis_speed_ctrl(self, axis_id, moto_id, k, b):
         '''通过轴号控制电机的速度'''
+        
         axis_value = self.joy.get_axis(axis_id)
-        if 0.05 > axis_value  > -0.05:
-            axis_value  = 0
-        if -1. < axis_value  < -0.995:
-            axis_value  = -1
-        if 1. > axis_value  > 0.995:
-            axis_value  = 1
+        # if 0.05 > axis_value  > -0.05:
+        #     axis_value  = 0
+        # if -1. < axis_value  < -0.995:
+        #     axis_value  = -1
+        # if 1. > axis_value  > 0.995:
+        #     axis_value  = 1
+        axis_value = axis_shift_cancelling(axis_value)
         
         speed = k*axis_value + b if axis_value != 0 else 0
         speed_old = self.axes_list[axis_id]
@@ -126,6 +158,30 @@ class thread_joystick(threading.Thread):
             self.robot.set_speed(moto_id, speed)
             self.axes_list[axis_id] = speed
     
+    def double_axis_ctrl(self, moto_id, axis_1, k1, b1, axis_2, k2, b2):
+        '''同时通过两个轴控制电机的速度'''
+        axis1_value = self.joy.get_axis(axis_1)
+        axis2_value = self.joy.get_axis(axis_2)
+        
+        axis1_value = axis_shift_cancelling(axis1_value)
+        axis2_value = axis_shift_cancelling(axis2_value)
+        
+        speed1 = k1*axis1_value + b1 if axis1_value != 0 else 0
+        speed2 = k2*axis2_value + b2 if axis2_value != 0 else 0
+        
+        speed1_old = self.axes_list[axis_1]
+        speed2_old = self.axes_list[axis_2]
+        
+        speed = speed1 + speed2
+        speed_old = speed1_old + speed2_old
+        
+        if abs(speed-speed_old) > 2 or (speed==0 and speed_old!=0):
+            self.robot.set_speed(moto_id, speed)
+            self.axes_list[axis_1] = speed1
+            self.axes_list[axis_2] = speed2
+        
+
+    
     def bond_button_func(self, button_num, func):
         """将按钮号与指定的函数相绑定"""
         self.button_ctrl_funcs[button_num] = func
@@ -133,7 +189,14 @@ class thread_joystick(threading.Thread):
     def bond_axis_func(self, moto_id, axis_num, spd_map=(-1, 1, 3600, -3600)):
         """将电机的控制与指定的轴号相连"""
         k, b = spd_map_func(map_in=(spd_map[0], spd_map[1]), map_out=(spd_map[2], spd_map[3]))
-        self.axes_ctrl_funcs[axis_num] = (lambda: self.axis_speed_ctrl(axis_num, moto_id, k, b))
+        self.axes_ctrl_funcs.append(lambda: self.axis_speed_ctrl(axis_num, moto_id, k, b))
+    
+    def bond_double_axes_func(self, moto_id, axis_1, axis_2, spd_map_1=(-1, 1, 0, -3600), spd_map_2=(-1, 1, 0, 3600)):
+        """"""
+        k1, b1 = spd_map_func_(spd_map_1)
+        k2, b2 = spd_map_func_(spd_map_2)
+        print(moto_id, axis_1, k1, b1, axis_2, k2, b2)
+        self.axes_ctrl_funcs.append(lambda: self.double_axis_ctrl(moto_id, axis_1, k1, b1, axis_2, k2, b2))
 
 
 

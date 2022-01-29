@@ -91,7 +91,7 @@ def bind_methods():
     main_window.gear_level_slider.valueChanged.connect(func_for_gearlevel_change)
 
     main_window.all_stop_button.clicked.connect(save_options) 
-    main_window.cath_up_button.clicked.connect(load_options)  
+    main_window.cath_up_button.clicked.connect(lambda: SurgRobot.step(0, 1))  
     pass
 
 def close_methods(*args):

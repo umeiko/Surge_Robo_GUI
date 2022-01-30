@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'dialog.ui'
+## Form generated from reading UI file 'portDialog.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.2.2
 ##
@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QLabel,
-    QPushButton, QRadioButton, QSizePolicy, QTextBrowser,
-    QTextEdit, QWidget)
+    QLineEdit, QPushButton, QRadioButton, QSizePolicy,
+    QTextBrowser, QWidget)
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -27,25 +27,28 @@ class Ui_Dialog(object):
         self.recv_Text = QTextBrowser(Dialog)
         self.recv_Text.setObjectName(u"recv_Text")
         self.recv_Text.setGeometry(QRect(10, 50, 331, 231))
-        self.send_Input = QTextEdit(Dialog)
-        self.send_Input.setObjectName(u"send_Input")
-        self.send_Input.setGeometry(QRect(10, 10, 261, 31))
         self.pushButton = QPushButton(Dialog)
         self.pushButton.setObjectName(u"pushButton")
         self.pushButton.setGeometry(QRect(270, 10, 71, 31))
         self.AutoLast = QRadioButton(Dialog)
         self.AutoLast.setObjectName(u"AutoLast")
-        self.AutoLast.setGeometry(QRect(10, 280, 121, 22))
+        self.AutoLast.setGeometry(QRect(180, 280, 101, 22))
         self.end_select = QComboBox(Dialog)
         self.end_select.addItem("")
         self.end_select.addItem("")
         self.end_select.addItem("")
         self.end_select.addItem("")
         self.end_select.setObjectName(u"end_select")
-        self.end_select.setGeometry(QRect(230, 280, 111, 22))
+        self.end_select.setGeometry(QRect(50, 280, 111, 22))
         self.label = QLabel(Dialog)
         self.label.setObjectName(u"label")
-        self.label.setGeometry(QRect(180, 280, 54, 22))
+        self.label.setGeometry(QRect(10, 280, 54, 22))
+        self.pushButton_2 = QPushButton(Dialog)
+        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.pushButton_2.setGeometry(QRect(280, 280, 61, 23))
+        self.send_Input = QLineEdit(Dialog)
+        self.send_Input.setObjectName(u"send_Input")
+        self.send_Input.setGeometry(QRect(10, 9, 261, 31))
 
         self.retranslateUi(Dialog)
 
@@ -70,5 +73,6 @@ class Ui_Dialog(object):
         self.end_select.setItemText(3, QCoreApplication.translate("Dialog", u"CR NL(\\r\\n)", None))
 
         self.label.setText(QCoreApplication.translate("Dialog", u"\u7ed3\u675f\u7b26", None))
+        self.pushButton_2.setText(QCoreApplication.translate("Dialog", u"\u6e05\u7a7a", None))
     # retranslateUi
 

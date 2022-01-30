@@ -1,24 +1,27 @@
+import threading
 from mainwindow import Ui_MainWindow
-from dialog import Ui_Dialog
+from portDialog import Ui_Dialog as port_dialog
+import serial_widget_thread
 from robot_control import Robot
 from joystick_control import joystick_manager
+from robot_control import Robot
 import sys
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 
-from robot_control import Robot
 
 main_window = Ui_MainWindow()
-dialog_1    = Ui_Dialog()
+dialog_port    = port_dialog()
 
 QueryTimer = QTimer()
 QueryTimer.setInterval(10)
 app = QApplication(sys.argv)
 w = QMainWindow()
-dia    = QDialog()
-dialog_1.setupUi(dia)
+diaPortAPP = QDialog()
+dialog_port.setupUi(diaPortAPP)
 main_window.setupUi(w)
 
+thread_listen = None
 
 SurgRobot = Robot(main_window=main_window)
 JoyStick = joystick_manager(SurgRobot, main_window)
@@ -87,12 +90,23 @@ def func_for_gearlevel_change(*args):
     print(SurgRobot.gear_level)
     pass
 
+def func_for_send_serial_msg(*args):
+    endings = ["", "\n", "\r", "\r\n"]
+    msg = dialog_port.send_Input.text()
+    msg += endings[dialog_port.end_select.currentIndex()]
+    SurgRobot.write_ser(msg)
+    dialog_port.send_Input.clear()
+
 
 def func_for_open_serial_test(*args):
+    thread_listen = serial_widget_thread.read_thr(SurgRobot, dialog_port)
+    thread_listen.start()
     pass
 
 def func_for_close_serial_test(*args):
-    pass
+    if thread_listen is not None:
+        thread_listen.isRunning = False
+        thread_listen = None
 
 def func_for_print_args(*args):
     print(args)
@@ -101,7 +115,7 @@ def func_for_print_args(*args):
 def func_for_menu(*args):
     text = args[0].text()
     if text == "串口调试":
-        dia.exec() 
+        diaPortAPP.exec() 
         
 
 def bind_methods():
@@ -117,13 +131,13 @@ def bind_methods():
     main_window.gear_level_slider.valueChanged.connect(func_for_gearlevel_change)
 
     main_window.menu.triggered.connect(func_for_menu)
-
-    dialog_1.pushButton.clicked.connect(lambda: print("hi"))
-    dia.showEvent = func_for_open_serial_test
-    dia.closeEvent = func_for_close_serial_test
+    dialog_port.pushButton.clicked.connect(func_for_send_serial_msg)
+    dialog_port.pushButton_2.clicked.connect(dialog_port.recv_Text.clear)
+    diaPortAPP.showEvent = func_for_open_serial_test
+    diaPortAPP.closeEvent = func_for_close_serial_test
     
     main_window.all_stop_button.clicked.connect(save_options) 
-    main_window.cath_up_button.clicked.connect(lambda: dia.exec())  
+    main_window.cath_up_button.clicked.connect(lambda: diaPortAPP.exec())  
     pass
 
 def close_methods(*args):

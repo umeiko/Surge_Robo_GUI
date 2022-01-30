@@ -1,2 +1,2 @@
-pyside6-uic dialog.ui > dialog.py
+pyside6-uic portDialog.ui > portDialog.py
 pause

@@ -103,6 +103,23 @@ class Robot():
             self.gear_level = 0.2
         return self.gear_level
     
+    def write_ser(self, content):
+        """直接写内容到机器人的串口"""
+        if isinstance(content, bytes):
+            content = content
+        elif isinstance(content, str):
+            content = content.encode()
+        else:
+            return False
+        if self.ser.isOpen():
+            self.write_lock.acquire()
+            self.ser.write(content)
+            self.write_lock.release
+            return True
+        else:
+            return False
+        
+    
     def run_spd_time(self, id, spd, time_s):
         self.set_speed_freq(id, spd)
         time.sleep(time_s)

@@ -101,12 +101,14 @@ def func_for_send_serial_msg(*args):
 def func_for_open_serial_test(*args):
     thread_listen = serial_widget_thread.read_thr(SurgRobot, dialog_port)
     thread_listen.start()
-    pass
+
 
 def func_for_close_serial_test(*args):
+    global thread_listen
     if thread_listen is not None:
         thread_listen.isRunning = False
         thread_listen = None
+
 
 def func_for_print_args(*args):
     print(args)
@@ -115,7 +117,9 @@ def func_for_print_args(*args):
 def func_for_menu(*args):
     text = args[0].text()
     if text == "串口调试":
-        diaPortAPP.exec() 
+        func_for_open_serial_test()
+        diaPortAPP.exec()
+        
         
 
 def bind_methods():
@@ -133,7 +137,7 @@ def bind_methods():
     main_window.menu.triggered.connect(func_for_menu)
     dialog_port.pushButton.clicked.connect(func_for_send_serial_msg)
     dialog_port.pushButton_2.clicked.connect(dialog_port.recv_Text.clear)
-    diaPortAPP.showEvent = func_for_open_serial_test
+    # diaPortAPP.showEvent = func_for_open_serial_test
     diaPortAPP.closeEvent = func_for_close_serial_test
     
     main_window.all_stop_button.clicked.connect(save_options) 

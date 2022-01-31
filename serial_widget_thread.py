@@ -17,8 +17,9 @@ class read_thr(threading.Thread):
         temp = b""
         cursor = self.portDialog.recv_Text.textCursor()
         pos = 0
-        while self.ser.isOpen():
-            if self.isRunning:
+        
+        while self.isRunning:
+            if not self.ser.isopen():
                 self.portDialog.recv_Text.append("串口未打开")
                 break
             self.robot.read_lock.acquire()
@@ -37,5 +38,5 @@ class read_thr(threading.Thread):
                 pos = len(self.portDialog.recv_Text.toPlainText())  # 获取文本尾部的位置
                 cursor.setPosition(pos)  # 游标位置设置为尾部
                 self.portDialog.recv_Text.setTextCursor(cursor)  # 滚动到游标位置    
-        time.sleep(0.05)
+            time.sleep(0.05)
         

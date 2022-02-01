@@ -114,12 +114,11 @@ class Robot():
         if self.ser.isOpen():
             self.write_lock.acquire()
             self.ser.write(content)
-            self.write_lock.release
+            self.write_lock.release()
             return True
         else:
             return False
         
-    
     def run_spd_time(self, id, spd, time_s):
         self.set_speed_freq(id, spd)
         time.sleep(time_s)
@@ -130,6 +129,20 @@ class Robot():
         tim = dis / spd
         thr = threading.Thread(target=lambda: self.run_spd_time(id, 3200, tim))
         thr.start()
+    
+    def all_stop(self):
+        """停止所有的电机运动"""
+        for i in range(3):
+            self.set_speed_freq(i)
+    
+    def flush_ser(self):
+        """清除串口缓冲区的内容"""
+        if self.ser.isOpen():
+            self.read_lock.acquire()
+            self.ser.read_all()
+            self.read_lock.release()
+            
+        
         
 
 

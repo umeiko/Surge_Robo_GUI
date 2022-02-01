@@ -11,26 +11,29 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 
 
 main_window = Ui_MainWindow()
-dialog_port    = port_dialog()
+dialog_port = port_dialog()
 
 QueryTimer = QTimer()
 QueryTimer.setInterval(10)
 app = QApplication(sys.argv)
 w = QMainWindow()
 diaPortAPP = QDialog()
+
 dialog_port.setupUi(diaPortAPP)
 main_window.setupUi(w)
 
-thread_listen = None
+
 
 SurgRobot = Robot(main_window=main_window)
 JoyStick = joystick_manager(SurgRobot, main_window)
+thread_listen = serial_widget_thread.read_thr(SurgRobot, dialog_port)
 
 robo_options = {
     "temp_ports_list": [],
     "temp_joys_list" : [],
     "last_port"      : 0,
     "last_joy"       : 0,
+    "end_char"       : 0,
 }
 
 def fresh_ports():
@@ -55,6 +58,7 @@ def fresh_joystick():
             main_window.joystick_select.addItem(i)
     robo_options["temp_joys_list"] = joys
 
+
 def func_for_show_ports(*args):
     """展示串口的函数"""
     fresh_ports()
@@ -69,7 +73,8 @@ def func_for_select_port(*args):
     else:
         SurgRobot.close_robot_port()
     robo_options["last_port"] = index
-    
+
+
 def func_for_show_joysticks(*args):
     """展示手柄的函数"""
     fresh_joystick()
@@ -97,17 +102,29 @@ def func_for_send_serial_msg(*args):
     SurgRobot.write_ser(msg)
     dialog_port.send_Input.clear()
 
-
-def func_for_open_serial_test(*args):
-    thread_listen = serial_widget_thread.read_thr(SurgRobot, dialog_port)
+def open_serial_thread():
+    """打开监听串口的后台线程"""
+    global thread_listen
     thread_listen.start()
 
-
-def func_for_close_serial_test(*args):
+def func_for_open_serial_dialog(*args):
+    dialog_port.recv_Text.clear()
+    if not SurgRobot.ser.isOpen():
+        dialog_port.recv_Text.append("串口未打开")
     global thread_listen
-    if thread_listen is not None:
-        thread_listen.isRunning = False
-        thread_listen = None
+    SurgRobot.flush_ser()
+    thread_listen.show = True
+    pass
+
+
+def func_for_close_serial_dialog(*args):
+    global thread_listen
+    thread_listen.show = False
+    pass
+
+def func_for_select_end_char(*args):
+    '''串口监视器选择结束符的函数'''
+    robo_options["end_char"]=args[0]
 
 
 def func_for_print_args(*args):
@@ -117,13 +134,13 @@ def func_for_print_args(*args):
 def func_for_menu(*args):
     text = args[0].text()
     if text == "串口调试":
-        func_for_open_serial_test()
         diaPortAPP.exec()
         
         
 
 def bind_methods():
     """为各个小部件绑定函数"""
+    global thread_listen
     # com_select
     main_window.com_select.mousePressEvent = func_for_show_ports
     main_window.com_select.currentIndexChanged.connect(func_for_select_port) 
@@ -133,12 +150,16 @@ def bind_methods():
     # gear_level_slider
     main_window.gear_level_slider.setPageStep(1)
     main_window.gear_level_slider.valueChanged.connect(func_for_gearlevel_change)
-
+    # menu
     main_window.menu.triggered.connect(func_for_menu)
+    # dialog_port
     dialog_port.pushButton.clicked.connect(func_for_send_serial_msg)
     dialog_port.pushButton_2.clicked.connect(dialog_port.recv_Text.clear)
-    # diaPortAPP.showEvent = func_for_open_serial_test
-    diaPortAPP.closeEvent = func_for_close_serial_test
+    dialog_port.end_select.currentIndexChanged.connect(func_for_select_end_char)
+    dialog_port.AutoLast.clicked.connect(thread_listen.jump_to_last_line)
+    diaPortAPP.showEvent = func_for_open_serial_dialog
+    diaPortAPP.closeEvent = func_for_close_serial_dialog
+    # 
     
     main_window.all_stop_button.clicked.connect(save_options) 
     main_window.cath_up_button.clicked.connect(lambda: diaPortAPP.exec())  
@@ -147,12 +168,15 @@ def bind_methods():
 def close_methods(*args):
     """主窗口关闭时进行的动作"""
     save_options()
+    thread_listen.isRunning = False
     SurgRobot.close_robot_port()
     JoyStick.close_joystick()
+    
 
 def init_methods(*args):
     """主函数开始运行时的动作"""
     load_options()
+    open_serial_thread()
 
 def save_options():
     """导出配置到文件中"""
@@ -173,6 +197,8 @@ def load_options():
 
     if temp_robo_options["temp_joys_list"] == robo_options["temp_joys_list"]:
         main_window.joystick_select.setCurrentIndex(temp_robo_options["last_joy"])
+    
+    dialog_port.end_select.setCurrentIndex(temp_robo_options["end_char"])
 
 
 if __name__ == "__main__":
@@ -187,6 +213,8 @@ if __name__ == "__main__":
 
     bind_methods()
     init_methods()
+    
+
     w.show()
     w.closeEvent = close_methods
     sys.exit(app.exec())

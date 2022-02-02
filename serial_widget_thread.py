@@ -16,8 +16,6 @@ class read_thr(threading.Thread):
     def jump_to_last_line(self):
         if self.portDialog.AutoLast.isChecked():
             try:
-                # pos = len(self.portDialog.recv_Text.toPlainText())  # 获取文本尾部的位置
-                # self.cursor.setPosition(pos)  # 游标位置设置为尾部
                 self.portDialog.recv_Text.setTextCursor(self.cursor)  # 滚动到游标位置
             except:
                 pass

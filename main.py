@@ -1,6 +1,7 @@
 import threading
 from mainwindow import Ui_MainWindow
 from portDialog import Ui_Dialog as port_dialog
+from joystickDialog import Ui_Dialog as joystick_dialog
 import serial_widget_thread
 from robot_control import Robot
 from joystick_control import joystick_manager
@@ -12,13 +13,16 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 
 main_window = Ui_MainWindow()
 dialog_port = port_dialog()
+dialog_joyconfig = joystick_dialog()
 
 QueryTimer = QTimer()
 QueryTimer.setInterval(10)
 app = QApplication(sys.argv)
 w = QMainWindow()
 diaPortAPP = QDialog()
+diaJoyAPP  = QDialog()
 
+dialog_joyconfig.setupUi(diaJoyAPP)
 dialog_port.setupUi(diaPortAPP)
 main_window.setupUi(w)
 
@@ -108,6 +112,7 @@ def open_serial_thread():
     thread_listen.start()
 
 def func_for_open_serial_dialog(*args):
+    """打开串口小部件时运行的函数"""
     dialog_port.recv_Text.clear()
     if not SurgRobot.ser.isOpen():
         dialog_port.recv_Text.append("串口未打开")
@@ -118,6 +123,7 @@ def func_for_open_serial_dialog(*args):
 
 
 def func_for_close_serial_dialog(*args):
+    """关闭串口小部件时运行的函数"""
     global thread_listen
     thread_listen.show = False
     pass
@@ -161,8 +167,8 @@ def bind_methods():
     diaPortAPP.closeEvent = func_for_close_serial_dialog
     # 
     
-    main_window.all_stop_button.clicked.connect(save_options) 
-    main_window.cath_up_button.clicked.connect(lambda: diaPortAPP.exec())  
+    main_window.all_stop_button.clicked.connect(SurgRobot.all_stop) 
+    main_window.cath_up_button.clicked.connect(lambda: diaJoyAPP.exec())  
     pass
 
 def close_methods(*args):

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>360</width>
-    <height>261</height>
+    <width>443</width>
+    <height>471</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,10 +29,16 @@
     </widget>
    </item>
    <item row="1" column="0" rowspan="3">
-    <widget class="QTextBrowser" name="textBrowser"/>
+    <widget class="QTextBrowser" name="joyStateShow">
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+    </widget>
    </item>
    <item row="1" column="1" colspan="3">
-    <widget class="QListWidget" name="listWidget">
+    <widget class="QListWidget" name="nowSettingShow">
      <property name="font">
       <font>
        <pointsize>8</pointsize>
@@ -52,21 +58,21 @@
     </widget>
    </item>
    <item row="2" column="2" colspan="2">
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="addSettingButton">
      <property name="text">
       <string>添加设置</string>
      </property>
     </widget>
    </item>
    <item row="3" column="1" colspan="2">
-    <widget class="QPushButton" name="pushButton_2">
+    <widget class="QPushButton" name="saveButton">
      <property name="text">
       <string>保存</string>
      </property>
     </widget>
    </item>
    <item row="3" column="3">
-    <widget class="QPushButton" name="pushButton_3">
+    <widget class="QPushButton" name="cancelButton">
      <property name="text">
       <string>取消</string>
      </property>
@@ -75,5 +81,38 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>saveButton</sender>
+   <signal>clicked()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>252</x>
+     <y>281</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>190</x>
+     <y>150</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>335</x>
+     <y>281</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>190</x>
+     <y>150</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

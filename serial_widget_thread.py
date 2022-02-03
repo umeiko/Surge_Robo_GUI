@@ -4,6 +4,7 @@ import threading
 
 
 class read_thr(threading.Thread):
+    """串口调试助手的收信线程"""
     def __init__(self, robot, portDialog):
         threading.Thread.__init__(self)
         self.isRunning = False
@@ -43,4 +44,5 @@ class read_thr(threading.Thread):
                        
             time.sleep(0.001)
         print("串口打印线程被终止")
-        
+
+

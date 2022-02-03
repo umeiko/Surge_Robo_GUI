@@ -1,13 +1,16 @@
-from urllib import robotparser
+from signal import Signals
 import pygame
 from pygame import joystick
 import threading
+from PySide6.QtCore import Signal, QObject
 # 导入依赖
 import time
 
 
+
 pygame.init()
 joystick.init()
+
 
 joy_config = {
     "default" : {
@@ -19,6 +22,22 @@ joy_config = {
         "button"   : [(6, "plus_gaer"), (7, "minus_gear")],
     }
 }
+
+def save_options():
+    """导出配置到文件中"""
+    import json as json
+    with open("joy_config.json", 'w') as js_file:
+        js_string = json.dumps(joy_config, sort_keys=True, indent=4, separators=(',', ': '))
+        js_file.write(js_string)
+
+def load_options():
+    """从文件中加载配置"""
+    global joy_config
+    import json as json
+    with open("joy_config.json", 'r') as js_file:
+        temp_robo_options = json.load(js_file)
+        joy_config = temp_robo_options
+
 
 def plus_gaer(robot, widget):
     level_value = robot.plus_gear_level()
@@ -60,6 +79,7 @@ class joystick_manager():
         self.thread = None
         self.main_window = main_window
         self.robot = robot
+        self.signals = Signal_Worker()
         pass
     
     def start_joystick(self, id):
@@ -198,6 +218,108 @@ class thread_joystick(threading.Thread):
         print(moto_id, axis_1, k1, b1, axis_2, k2, b2)
         self.axes_ctrl_funcs.append(lambda: self.double_axis_ctrl(moto_id, axis_1, k1, b1, axis_2, k2, b2))
 
+
+class Signal_Worker(QObject):
+    sender = Signal(str)
+    dic_sender = Signal(dict)
+    def send_text(self, text):
+        self.sender.emit(text)
+    def send_dict(self, dic):
+        self.dic_sender.emit(dic)
+
+class flash_joyState_text(threading.Thread):
+    def __init__(self, joyDialog):
+        threading.Thread.__init__(self)
+        self.joy = None
+        # self.joy = joystick.Joystick(id)
+        self.isRunning = False
+        self.joyDialog = joyDialog
+        self.send_str = Signal_Worker()
+        self.lock = threading.Lock()
+        self.last_len = 10
+
+    def run(self):
+        self.isRunning = True
+        clock = pygame.time.Clock()
+        self.joyDialog.joyStateShow.clear()
+        
+        while self.isRunning:
+            if self.joy is not None:
+                self.lock.acquire()
+                text = self.get_state()
+                self.lock.release()
+                self.send_str.send_text(text)
+            clock.tick(30)
+    
+    def set_joy(self, joyId):
+        if self.joy is not None:
+            self.ignore_joy()
+        self.lock.acquire()
+        self.joy = joystick.Joystick(joyId)
+        self.joy.init()
+        self.lock.release()
+
+    def ignore_joy(self):
+        if self.joy is not None:
+            self.lock.acquire()
+            self.joy.quit()
+            self.joy = None
+            self.lock.release()
+
+    def get_state(self):
+        state_str = ""
+        indent_str = ""
+        try:
+            jid = self.joy.get_instance_id()
+        except AttributeError:
+            # get_instance_id() is an SDL2 method
+            jid = self.joy.get_id()
+        state_str += "{}Joystick {}\n".format(indent_str, jid)
+        indent_str += "  "
+
+        # Get the name from the OS for the controller/self.joy.
+        name = self.joy.get_name()
+        state_str += "{}Joystick name: {}\n".format(indent_str, name)
+
+        try:
+            guid = self.joy.get_guid()
+        except AttributeError:
+            # get_guid() is an SDL2 method
+            pass
+        else:
+            state_str += "{}GUID: {}\n".format(indent_str, guid)
+
+        # Usually axis run in pairs, up/down for one, and left/right for
+        # the other.
+        axes = self.joy.get_numaxes()
+        state_str += "{}Number of axes: {}\n".format(indent_str, axes)
+        indent_str += "  "
+
+        for i in range(axes):
+            axis = self.joy.get_axis(i)
+            state_str += "{}Axis {} value: {:>6.3f}\n".format(indent_str, i, axis)
+        
+        indent_str = indent_str[::-2]
+
+        buttons = self.joy.get_numbuttons()
+        state_str += "{}Number of buttons: {}\n".format(indent_str, buttons)
+        indent_str += "  "
+
+        for i in range(buttons):
+            button = self.joy.get_button(i)
+            state_str +=  "{}Button {:>2} value: {}\n".format(indent_str, i, button)
+        indent_str = indent_str[::-2]
+
+        hats = self.joy.get_numhats()
+        state_str += "{}Number of hats: {}\n".format(indent_str, hats)
+        indent_str += "  "
+
+        # Hat position. All or nothing for direction, not a float like
+        # get_axis(). Position is a tuple of int values (x, y).
+        for i in range(hats):
+            hat = self.joy.get_hat(i)
+            state_str += "{}Hat {} value: {}\n".format(indent_str, i, str(hat))
+        return state_str
 
 
 if __name__ == "__main__":

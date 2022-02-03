@@ -23,7 +23,7 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         if not Dialog.objectName():
             Dialog.setObjectName(u"Dialog")
-        Dialog.resize(360, 261)
+        Dialog.resize(443, 471)
         self.gridLayout = QGridLayout(Dialog)
         self.gridLayout.setObjectName(u"gridLayout")
         self.label = QLabel(Dialog)
@@ -36,38 +36,41 @@ class Ui_Dialog(object):
 
         self.gridLayout.addWidget(self.label_2, 0, 1, 1, 1)
 
-        self.textBrowser = QTextBrowser(Dialog)
-        self.textBrowser.setObjectName(u"textBrowser")
-
-        self.gridLayout.addWidget(self.textBrowser, 1, 0, 3, 1)
-
-        self.listWidget = QListWidget(Dialog)
+        self.joyStateShow = QTextBrowser(Dialog)
+        self.joyStateShow.setObjectName(u"joyStateShow")
         font = QFont()
         font.setPointSize(8)
-        __qlistwidgetitem = QListWidgetItem(self.listWidget)
+        self.joyStateShow.setFont(font)
+
+        self.gridLayout.addWidget(self.joyStateShow, 1, 0, 3, 1)
+
+        self.nowSettingShow = QListWidget(Dialog)
+        __qlistwidgetitem = QListWidgetItem(self.nowSettingShow)
         __qlistwidgetitem.setFont(font);
-        self.listWidget.setObjectName(u"listWidget")
-        self.listWidget.setFont(font)
+        self.nowSettingShow.setObjectName(u"nowSettingShow")
+        self.nowSettingShow.setFont(font)
 
-        self.gridLayout.addWidget(self.listWidget, 1, 1, 1, 3)
+        self.gridLayout.addWidget(self.nowSettingShow, 1, 1, 1, 3)
 
-        self.pushButton = QPushButton(Dialog)
-        self.pushButton.setObjectName(u"pushButton")
+        self.addSettingButton = QPushButton(Dialog)
+        self.addSettingButton.setObjectName(u"addSettingButton")
 
-        self.gridLayout.addWidget(self.pushButton, 2, 2, 1, 2)
+        self.gridLayout.addWidget(self.addSettingButton, 2, 2, 1, 2)
 
-        self.pushButton_2 = QPushButton(Dialog)
-        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.saveButton = QPushButton(Dialog)
+        self.saveButton.setObjectName(u"saveButton")
 
-        self.gridLayout.addWidget(self.pushButton_2, 3, 1, 1, 2)
+        self.gridLayout.addWidget(self.saveButton, 3, 1, 1, 2)
 
-        self.pushButton_3 = QPushButton(Dialog)
-        self.pushButton_3.setObjectName(u"pushButton_3")
+        self.cancelButton = QPushButton(Dialog)
+        self.cancelButton.setObjectName(u"cancelButton")
 
-        self.gridLayout.addWidget(self.pushButton_3, 3, 3, 1, 1)
+        self.gridLayout.addWidget(self.cancelButton, 3, 3, 1, 1)
 
 
         self.retranslateUi(Dialog)
+        self.saveButton.clicked.connect(Dialog.accept)
+        self.cancelButton.clicked.connect(Dialog.reject)
 
         QMetaObject.connectSlotsByName(Dialog)
     # setupUi
@@ -77,15 +80,15 @@ class Ui_Dialog(object):
         self.label.setText(QCoreApplication.translate("Dialog", u"\u624b\u67c4\u72b6\u6001", None))
         self.label_2.setText(QCoreApplication.translate("Dialog", u"\u5f53\u524d\u8bbe\u7f6e", None))
 
-        __sortingEnabled = self.listWidget.isSortingEnabled()
-        self.listWidget.setSortingEnabled(False)
-        ___qlistwidgetitem = self.listWidget.item(0)
+        __sortingEnabled = self.nowSettingShow.isSortingEnabled()
+        self.nowSettingShow.setSortingEnabled(False)
+        ___qlistwidgetitem = self.nowSettingShow.item(0)
         ___qlistwidgetitem.setText(QCoreApplication.translate("Dialog", u"\u8f74 1: \u5bfc\u7ba1\u8fd0\u52a8\n"
 "    (-1, 1) -> (-6400, 6400)", None));
-        self.listWidget.setSortingEnabled(__sortingEnabled)
+        self.nowSettingShow.setSortingEnabled(__sortingEnabled)
 
-        self.pushButton.setText(QCoreApplication.translate("Dialog", u"\u6dfb\u52a0\u8bbe\u7f6e", None))
-        self.pushButton_2.setText(QCoreApplication.translate("Dialog", u"\u4fdd\u5b58", None))
-        self.pushButton_3.setText(QCoreApplication.translate("Dialog", u"\u53d6\u6d88", None))
+        self.addSettingButton.setText(QCoreApplication.translate("Dialog", u"\u6dfb\u52a0\u8bbe\u7f6e", None))
+        self.saveButton.setText(QCoreApplication.translate("Dialog", u"\u4fdd\u5b58", None))
+        self.cancelButton.setText(QCoreApplication.translate("Dialog", u"\u53d6\u6d88", None))
     # retranslateUi
 

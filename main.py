@@ -2,9 +2,10 @@ import threading
 from mainwindow import Ui_MainWindow
 from portDialog import Ui_Dialog as port_dialog
 from joystickDialog import Ui_Dialog as joystick_dialog
+from axisSetDialog import Ui_Dialog as axis_dialog
 import serial_widget_thread
 from robot_control import Robot
-from joystick_control import joystick_manager
+from joystick_control import joystick_manager, flash_joyState_text
 from robot_control import Robot
 import sys
 from PySide6.QtCore import QTimer
@@ -14,6 +15,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 main_window = Ui_MainWindow()
 dialog_port = port_dialog()
 dialog_joyconfig = joystick_dialog()
+dialog_axis_add = axis_dialog()
 
 QueryTimer = QTimer()
 QueryTimer.setInterval(10)
@@ -21,16 +23,20 @@ app = QApplication(sys.argv)
 w = QMainWindow()
 diaPortAPP = QDialog()
 diaJoyAPP  = QDialog()
+axisAPP = QDialog()
 
 dialog_joyconfig.setupUi(diaJoyAPP)
 dialog_port.setupUi(diaPortAPP)
+dialog_axis_add.setupUi(axisAPP)
 main_window.setupUi(w)
 
 
 
 SurgRobot = Robot(main_window=main_window)
 JoyStick = joystick_manager(SurgRobot, main_window)
-thread_listen = serial_widget_thread.read_thr(SurgRobot, dialog_port)
+thread_listen    = serial_widget_thread.read_thr(SurgRobot, dialog_port)
+thread_joylisten = flash_joyState_text(dialog_joyconfig)
+
 
 robo_options = {
     "temp_ports_list": [],
@@ -39,6 +45,7 @@ robo_options = {
     "last_joy"       : 0,
     "end_char"       : 0,
 }
+
 
 def fresh_ports():
     ports, names = SurgRobot.scan_ports()    
@@ -111,6 +118,29 @@ def open_serial_thread():
     global thread_listen
     thread_listen.start()
 
+def open_joy_thread():
+    """打开监听手柄的后台线程"""
+    global thread_joylisten
+    thread_joylisten.start()
+
+def func_for_open_joySet_dialog(*args):
+    dialog_joyconfig.joyStateShow.clear()
+    global thread_joylisten
+    JoyStick.close_joystick()
+    index = robo_options["last_joy"]
+    if index > 0:
+        thread_joylisten.set_joy(robo_options["last_joy"]-1)
+    else:
+        dialog_joyconfig.joyStateShow.append("手柄未选择")
+
+def func_for_close_joySet_dialog(*args):
+    global thread_joylisten
+    thread_joylisten.ignore_joy()
+    index = robo_options["last_joy"]
+    if index > 0:
+        JoyStick.start_joystick(robo_options["last_joy"]-1)
+    
+
 def func_for_open_serial_dialog(*args):
     """打开串口小部件时运行的函数"""
     dialog_port.recv_Text.clear()
@@ -141,6 +171,9 @@ def func_for_menu(*args):
     text = args[0].text()
     if text == "串口调试":
         diaPortAPP.exec()
+    if text == "手柄映射设置":
+        diaJoyAPP.exec()
+
         
         
 
@@ -165,8 +198,15 @@ def bind_methods():
     dialog_port.AutoLast.clicked.connect(thread_listen.jump_to_last_line)
     diaPortAPP.showEvent = func_for_open_serial_dialog
     diaPortAPP.closeEvent = func_for_close_serial_dialog
-    # 
-    
+    # dialog_joy
+    dialog_joyconfig.addSettingButton.clicked.connect(axisAPP.exec)
+    dialog_joyconfig.nowSettingShow.itemDoubleClicked.connect(func_for_print_args)
+    thread_joylisten.send_str.sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
+    # dialog_joyconfig.joyStateShow.textCursor()
+    diaJoyAPP.rejected.connect(func_for_close_joySet_dialog)
+    diaJoyAPP.showEvent = func_for_open_joySet_dialog
+    diaJoyAPP.closeEvent = func_for_close_joySet_dialog
+    # buttons
     main_window.all_stop_button.clicked.connect(SurgRobot.all_stop) 
     main_window.cath_up_button.clicked.connect(lambda: diaJoyAPP.exec())  
     pass
@@ -175,14 +215,18 @@ def close_methods(*args):
     """主窗口关闭时进行的动作"""
     save_options()
     thread_listen.isRunning = False
+    thread_joylisten.isRunning = False
     SurgRobot.close_robot_port()
     JoyStick.close_joystick()
+
     
 
 def init_methods(*args):
     """主函数开始运行时的动作"""
     load_options()
     open_serial_thread()
+    open_joy_thread()
+
 
 def save_options():
     """导出配置到文件中"""

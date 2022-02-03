@@ -23,15 +23,16 @@ joy_config = {
     }
 }
 
-def save_options():
-    """导出配置到文件中"""
+
+def save_joy_options(*args):
+    """导出手柄配置到文件中"""
     import json as json
     with open("joy_config.json", 'w') as js_file:
         js_string = json.dumps(joy_config, sort_keys=True, indent=4, separators=(',', ': '))
         js_file.write(js_string)
 
-def load_options():
-    """从文件中加载配置"""
+def load_joy_options():
+    """从文件中加载手柄配置"""
     global joy_config
     import json as json
     with open("joy_config.json", 'r') as js_file:
@@ -89,6 +90,7 @@ class joystick_manager():
             del self.joy
         self.joy = joystick.Joystick(id)
         self.thread = thread_joystick(self.joy, self.robot, self.main_window)
+        self.thread.name = "手柄操作线程"
         self.config_joystick()
         self.thread.start()
     
@@ -228,30 +230,29 @@ class Signal_Worker(QObject):
         self.dic_sender.emit(dic)
 
 class flash_joyState_text(threading.Thread):
-    def __init__(self, joyDialog):
+    def __init__(self):
         threading.Thread.__init__(self)
         self.joy = None
         # self.joy = joystick.Joystick(id)
         self.isRunning = False
-        self.joyDialog = joyDialog
-        self.send_str = Signal_Worker()
+        self.signal_boject = Signal_Worker()
         self.lock = threading.Lock()
         self.last_len = 10
 
     def run(self):
         self.isRunning = True
         clock = pygame.time.Clock()
-        self.joyDialog.joyStateShow.clear()
         
         while self.isRunning:
             if self.joy is not None:
                 self.lock.acquire()
                 text = self.get_state()
                 self.lock.release()
-                self.send_str.send_text(text)
+                self.signal_boject.send_text(text)
             clock.tick(30)
     
     def set_joy(self, joyId):
+        self.signal_boject.send_dict(joy_config["default"])
         if self.joy is not None:
             self.ignore_joy()
         self.lock.acquire()

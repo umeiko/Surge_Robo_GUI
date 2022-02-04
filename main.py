@@ -233,8 +233,9 @@ def close_methods(*args):
 
 def init_methods(*args):
     """主函数开始运行时的动作"""
-    load_options()
     load_joy_options()
+    load_options()
+    
     open_serial_thread()
     open_joy_thread()
 

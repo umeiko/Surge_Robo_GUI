@@ -87,26 +87,40 @@ class Ui_Dialog(object):
 
         self.gridLayout.addWidget(self.highAxis, 2, 3, 1, 1)
 
-        self.buttonBox = QDialogButtonBox(Dialog)
-        self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
-
-        self.gridLayout.addWidget(self.buttonBox, 3, 5, 1, 2)
-
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout.addItem(self.verticalSpacer_2, 4, 5, 1, 1)
-
         self.label = QLabel(Dialog)
         self.label.setObjectName(u"label")
         self.label.setAlignment(Qt.AlignCenter)
 
         self.gridLayout.addWidget(self.label, 2, 4, 1, 1)
 
+        self.buttonBox = QDialogButtonBox(Dialog)
+        self.buttonBox.setObjectName(u"buttonBox")
+        self.buttonBox.setOrientation(Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+
+        self.gridLayout.addWidget(self.buttonBox, 5, 5, 1, 2)
+
+        self.label_5 = QLabel(Dialog)
+        self.label_5.setObjectName(u"label_5")
+
+        self.gridLayout.addWidget(self.label_5, 4, 0, 1, 1)
+
+        self.motoSelect = QComboBox(Dialog)
+        self.motoSelect.addItem("")
+        self.motoSelect.addItem("")
+        self.motoSelect.addItem("")
+        self.motoSelect.addItem("")
+        self.motoSelect.setObjectName(u"motoSelect")
+
+        self.gridLayout.addWidget(self.motoSelect, 5, 0, 1, 1)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.gridLayout.addItem(self.horizontalSpacer, 2, 1, 1, 1)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout.addItem(self.verticalSpacer_2, 6, 5, 1, 1)
 
 
         self.retranslateUi(Dialog)
@@ -118,9 +132,15 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"\u624b\u67c4\u6620\u5c04\u8bbe\u7f6e", None))
-        self.label_3.setText(QCoreApplication.translate("Dialog", u"\u7535\u673a\u8f74\u533a\u95f4", None))
+        self.label_3.setText(QCoreApplication.translate("Dialog", u"\u5668\u68b0\u901f\u5ea6\u533a\u95f4", None))
         self.label_2.setText(QCoreApplication.translate("Dialog", u"\u624b\u67c4\u8f74\u533a\u95f4", None))
         self.label_4.setText(QCoreApplication.translate("Dialog", u"\u8f74\u53f7", None))
         self.label.setText(QCoreApplication.translate("Dialog", u"->", None))
+        self.label_5.setText(QCoreApplication.translate("Dialog", u"\u88ab\u64cd\u7eb5\u5668\u68b0", None))
+        self.motoSelect.setItemText(0, QCoreApplication.translate("Dialog", u"\u65e0\u64cd\u4f5c", None))
+        self.motoSelect.setItemText(1, QCoreApplication.translate("Dialog", u"\u5bfc\u7ba1\u9012\u9001", None))
+        self.motoSelect.setItemText(2, QCoreApplication.translate("Dialog", u"\u5bfc\u4e1d\u9012\u9001", None))
+        self.motoSelect.setItemText(3, QCoreApplication.translate("Dialog", u"\u5bfc\u4e1d\u65cb\u8f6c", None))
+
     # retranslateUi
 

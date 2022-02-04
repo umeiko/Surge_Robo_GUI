@@ -12,17 +12,18 @@ pygame.init()
 joystick.init()
 
 
-joy_config = {
-    "default" : {
-        "axis"      : [(0, 1, -1, 1, -3600, 3600),
-                       (1, 3, -1, 1, -3600, 3600),
-                       (2, 4, -1, 1, 0, -3600),
-                       (2, 5, -1, 1, 0, 3600),
-                      ],
-        "button"   : [(6, "plus_gaer"), (7, "minus_gear")],
-    }
-}
+# joy_config = {
+#     "default" : {
+#         "axis"      : [(0, 1, -1, 1, -3600, 3600),
+#                        (1, 3, -1, 1, -3600, 3600),
+#                        (2, 4, -1, 1, 0, -3600),
+#                        (2, 5, -1, 1, 0, 3600),
+#                       ],
+#         "button"   : [(6, "plus_gaer"), (7, "minus_gear")],
+#     }
+# }
 
+joy_config = None
 
 def save_joy_options(*args):
     """导出手柄配置到文件中"""

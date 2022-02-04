@@ -1,2 +1,2 @@
-pyside6-uic joystickDialog.ui > joystickDialog.py
+pyside6-uic axisSetDialog.ui > axisSetDialog.py
 pause

@@ -418,6 +418,9 @@ border-image: url(:/up.png);</string>
       <height>141</height>
      </rect>
     </property>
+    <property name="minimum">
+     <number>0</number>
+    </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
     </property>

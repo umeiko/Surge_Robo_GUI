@@ -1,2 +1,2 @@
-pyside6-uic axisSetDialog.ui > axisSetDialog.py
+pyside6-uic mainWindow.ui > mainWindow_.py
 pause

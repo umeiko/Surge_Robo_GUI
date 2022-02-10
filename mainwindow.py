@@ -17,23 +17,32 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QGroupBox,
-    QLCDNumber, QLabel, QMainWindow, QMenu,
-    QMenuBar, QProgressBar, QPushButton, QSizePolicy,
-    QSlider, QStatusBar, QVBoxLayout, QWidget)
+    QHBoxLayout, QLCDNumber, QLabel, QMainWindow,
+    QMenu, QMenuBar, QProgressBar, QPushButton,
+    QSizePolicy, QSlider, QStatusBar, QVBoxLayout,
+    QWidget)
 import resources.resources_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(618, 609)
+        MainWindow.resize(620, 620)
+        MainWindow.setMinimumSize(QSize(620, 620))
+        MainWindow.setMaximumSize(QSize(700, 700))
         icon = QIcon()
         icon.addFile(u":/main_icon.png", QSize(), QIcon.Normal, QIcon.Off)
         MainWindow.setWindowIcon(icon)
-        self.action = QAction(MainWindow)
-        self.action.setObjectName(u"action")
-        self.action_2 = QAction(MainWindow)
-        self.action_2.setObjectName(u"action_2")
+        self.menu_joySet = QAction(MainWindow)
+        self.menu_joySet.setObjectName(u"menu_joySet")
+        self.menu_Port = QAction(MainWindow)
+        self.menu_Port.setObjectName(u"menu_Port")
+        self.menu_exit = QAction(MainWindow)
+        self.menu_exit.setObjectName(u"menu_exit")
+        self.style_classic = QAction(MainWindow)
+        self.style_classic.setObjectName(u"style_classic")
+        self.style_dark = QAction(MainWindow)
+        self.style_dark.setObjectName(u"style_dark")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.wire_rotSpeed_lcd = QLCDNumber(self.centralwidget)
@@ -144,6 +153,7 @@ class Ui_MainWindow(object):
         self.wire_step_slider = QSlider(self.centralwidget)
         self.wire_step_slider.setObjectName(u"wire_step_slider")
         self.wire_step_slider.setGeometry(QRect(370, 319, 22, 141))
+        self.wire_step_slider.setMinimum(0)
         self.wire_step_slider.setOrientation(Qt.Vertical)
         self.wire_step_slider.setInvertedAppearance(False)
         self.wire_step_slider.setInvertedControls(False)
@@ -192,10 +202,10 @@ class Ui_MainWindow(object):
         self.line_2.setFrameShadow(QFrame.Sunken)
         self.groupBox = QGroupBox(self.centralwidget)
         self.groupBox.setObjectName(u"groupBox")
-        self.groupBox.setGeometry(QRect(420, 400, 181, 161))
+        self.groupBox.setGeometry(QRect(420, 400, 181, 171))
         self.verticalLayoutWidget = QWidget(self.groupBox)
         self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
-        self.verticalLayoutWidget.setGeometry(QRect(10, 20, 160, 130))
+        self.verticalLayoutWidget.setGeometry(QRect(10, 20, 160, 150))
         self.verticalLayout = QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -223,16 +233,28 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.joystick_select)
 
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.label_10 = QLabel(self.verticalLayoutWidget)
         self.label_10.setObjectName(u"label_10")
 
-        self.verticalLayout.addWidget(self.label_10)
+        self.horizontalLayout.addWidget(self.label_10)
+
+        self.label_14 = QLabel(self.verticalLayoutWidget)
+        self.label_14.setObjectName(u"label_14")
+
+        self.horizontalLayout.addWidget(self.label_14)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout)
 
         self.gear_level_slider = QSlider(self.verticalLayoutWidget)
         self.gear_level_slider.setObjectName(u"gear_level_slider")
         self.gear_level_slider.setCursor(QCursor(Qt.OpenHandCursor))
         self.gear_level_slider.setMinimum(1)
         self.gear_level_slider.setMaximum(5)
+        self.gear_level_slider.setPageStep(1)
+        self.gear_level_slider.setValue(1)
         self.gear_level_slider.setOrientation(Qt.Horizontal)
 
         self.verticalLayout.addWidget(self.gear_level_slider)
@@ -249,27 +271,40 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 618, 23))
+        self.menubar.setGeometry(QRect(0, 0, 620, 23))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
+        self.menu_2 = QMenu(self.menu)
+        self.menu_2.setObjectName(u"menu_2")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
         self.menubar.addAction(self.menu.menuAction())
-        self.menu.addAction(self.action)
-        self.menu.addAction(self.action_2)
+        self.menu.addAction(self.menu_joySet)
+        self.menu.addAction(self.menu_Port)
+        self.menu.addSeparator()
+        self.menu.addAction(self.menu_2.menuAction())
+        self.menu.addSeparator()
+        self.menu.addAction(self.menu_exit)
+        self.menu_2.addAction(self.style_classic)
+        self.menu_2.addAction(self.style_dark)
 
         self.retranslateUi(MainWindow)
+        self.gear_level_slider.valueChanged.connect(self.label_14.setNum)
+        self.menu_exit.triggered.connect(MainWindow.close)
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u624b\u672f\u673a\u5668\u4eba\u4e13\u5bb6", None))
-        self.action.setText(QCoreApplication.translate("MainWindow", u"\u624b\u67c4\u6620\u5c04\u8bbe\u7f6e", None))
-        self.action_2.setText(QCoreApplication.translate("MainWindow", u"\u4e32\u53e3\u8c03\u8bd5", None))
+        self.menu_joySet.setText(QCoreApplication.translate("MainWindow", u"\u624b\u67c4\u6620\u5c04\u8bbe\u7f6e", None))
+        self.menu_Port.setText(QCoreApplication.translate("MainWindow", u"\u4e32\u53e3\u8c03\u8bd5", None))
+        self.menu_exit.setText(QCoreApplication.translate("MainWindow", u"\u9000\u51fa", None))
+        self.style_classic.setText(QCoreApplication.translate("MainWindow", u"\u7ecf\u5178", None))
+        self.style_dark.setText(QCoreApplication.translate("MainWindow", u"\u6697\u9ed1", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u5bfc\u4e1d\u8fdb\u7ed9\u901f\u5ea6", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"\u5bfc\u4e1d\u65cb\u8f6c\u901f\u5ea6", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"\u5bfc\u7ba1\u8fdb\u7ed9\u901f\u5ea6", None))
@@ -295,16 +330,19 @@ class Ui_MainWindow(object):
         self.all_stop_button.setText(QCoreApplication.translate("MainWindow", u"\u673a\u5668\u6025\u505c", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"\u673a\u5668\u4eba\u8bbe\u7f6e", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"\u4e32\u53e3\u9009\u62e9", None))
-        self.com_select.setItemText(0, QCoreApplication.translate("MainWindow", u"\u65ad\u5f00\u94fe\u63a5", None))
+        self.com_select.setItemText(0, QCoreApplication.translate("MainWindow", u"\u65ad\u5f00\u8fde\u63a5", None))
 
+        self.com_select.setCurrentText(QCoreApplication.translate("MainWindow", u"\u65ad\u5f00\u8fde\u63a5", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u624b\u67c4\u9009\u62e9", None))
-        self.joystick_select.setItemText(0, QCoreApplication.translate("MainWindow", u"\u65ad\u5f00\u94fe\u63a5", None))
+        self.joystick_select.setItemText(0, QCoreApplication.translate("MainWindow", u"\u65ad\u5f00\u8fde\u63a5", None))
 
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"\u901f\u5ea6\u6863\u4f4d", None))
+        self.label_14.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.cath_mode_select.setItemText(0, QCoreApplication.translate("MainWindow", u"\u5bfc\u7ba1\u5e26\u52a8\u5bfc\u4e1d\u8fd0\u52a8", None))
         self.cath_mode_select.setItemText(1, QCoreApplication.translate("MainWindow", u"\u5bfc\u7ba1\u72ec\u7acb\u8fd0\u52a8", None))
 
         self.label_17.setText(QCoreApplication.translate("MainWindow", u"\u5bfc\u4e1d-\u5bfc\u7ba1\u534f\u540c", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u83dc\u5355", None))
+        self.menu_2.setTitle(QCoreApplication.translate("MainWindow", u"\u66f4\u6539\u76ae\u80a4", None))
     # retranslateUi
 

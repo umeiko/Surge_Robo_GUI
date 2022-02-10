@@ -1,4 +1,4 @@
-from mainwindow import Ui_MainWindow
+from mainWindow import Ui_MainWindow
 from portDialog import Ui_Dialog as port_dialog
 from joystickDialog import Ui_Dialog as joystick_dialog
 from axisSetDialog import Ui_Dialog as axis_dialog
@@ -42,6 +42,7 @@ thread_listen    = serial_widget_thread.read_thr(SurgRobot, dialog_port)
 thread_listen.name = "串口调试助手线程"
 thread_joylisten = flash_joyState_text()
 thread_joylisten.name = "手柄调试助手线程"
+cursor = dialog_port.recv_Text.textCursor()
 
 robo_options = {
     "temp_ports_list": [],
@@ -173,15 +174,6 @@ def func_for_print_args(*args):
     """将传入的事件参数全部打印出来"""
     print(args)
 
-
-def func_for_menu(*args):
-    """为菜单栏绑定方法"""
-    text = args[0].text()
-    if text == "串口调试":
-        diaPortAPP.exec()
-    if text == "手柄映射设置":
-        diaJoyAPP.exec()
-
 def dialog_joy_setting_update(dict):
     """传入手柄配置字典，刷新手柄设置菜单中的当前配置"""
     dialog_joyconfig.nowSettingShow.clear()
@@ -225,13 +217,15 @@ def bind_methods():
     main_window.gear_level_slider.setPageStep(1)
     main_window.gear_level_slider.valueChanged.connect(func_for_gearlevel_change)
     # menu
-    main_window.menu.triggered.connect(func_for_menu)
+    main_window.menu_joySet.triggered.connect(diaJoyAPP.exec)
+    main_window.menu_Port.triggered.connect(diaPortAPP.exec)
     # dialog_port
     dialog_port.pushButton.clicked.connect(func_for_send_serial_msg)
     dialog_port.pushButton_2.clicked.connect(dialog_port.recv_Text.clear)
     dialog_port.end_select.currentIndexChanged.connect(func_for_select_end_char)
     dialog_port.AutoLast.clicked.connect(thread_listen.jump_to_last_line)
     thread_listen.worker.jump_sig.connect(dialog_port.recv_Text.setTextCursor)
+    thread_listen.worker.send_char_sig.connect(cursor.insertText)
     diaPortAPP.showEvent = func_for_open_serial_dialog
     diaPortAPP.closeEvent = func_for_close_serial_dialog
     # dialog_joy

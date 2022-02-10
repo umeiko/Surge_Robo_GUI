@@ -141,6 +141,10 @@ class Robot():
             self.read_lock.acquire()
             self.ser.read_all()
             self.read_lock.release()
+    
+    def change_disable_state(self, id, state):
+        """更改介入器械的锁定-启用状态"""
+        pass
             
         
         

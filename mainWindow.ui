@@ -610,9 +610,12 @@ border-image: url(:/up.png);</string>
         <property name="cursor">
          <cursorShape>PointingHandCursor</cursorShape>
         </property>
+        <property name="currentText">
+         <string>断开连接</string>
+        </property>
         <item>
          <property name="text">
-          <string>断开链接</string>
+          <string>断开连接</string>
          </property>
         </item>
        </widget>
@@ -631,7 +634,7 @@ border-image: url(:/up.png);</string>
         </property>
         <item>
          <property name="text">
-          <string>断开链接</string>
+          <string>断开连接</string>
          </property>
         </item>
        </widget>

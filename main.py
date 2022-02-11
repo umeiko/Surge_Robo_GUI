@@ -1,5 +1,4 @@
-import threading
-from mainwindow import Ui_MainWindow
+from mainWindow import Ui_MainWindow
 from portDialog import Ui_Dialog as port_dialog
 from joystickDialog import Ui_Dialog as joystick_dialog
 from axisSetDialog import Ui_Dialog as axis_dialog
@@ -13,6 +12,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 
 
 main_window = Ui_MainWindow()
+
 dialog_port = port_dialog()
 dialog_joyconfig = joystick_dialog()
 dialog_axis_add = axis_dialog()
@@ -21,6 +21,7 @@ QueryTimer = QTimer()
 QueryTimer.setInterval(10)
 app = QApplication(sys.argv)
 w = QMainWindow()
+
 diaPortAPP = QDialog()
 diaJoyAPP  = QDialog()
 axisAPP = QDialog()
@@ -29,6 +30,9 @@ dialog_joyconfig.setupUi(diaJoyAPP)
 dialog_port.setupUi(diaPortAPP)
 dialog_axis_add.setupUi(axisAPP)
 main_window.setupUi(w)
+main_window.speed_UI_list = [main_window.cath_speed_lcd, 
+                             main_window.wire_speed_lcd,
+                             main_window.wire_rotSpeed_lcd]
 
 
 
@@ -38,6 +42,7 @@ thread_listen    = serial_widget_thread.read_thr(SurgRobot, dialog_port)
 thread_listen.name = "串口调试助手线程"
 thread_joylisten = flash_joyState_text()
 thread_joylisten.name = "手柄调试助手线程"
+cursor = dialog_port.recv_Text.textCursor()
 
 robo_options = {
     "temp_ports_list": [],
@@ -166,27 +171,41 @@ def func_for_select_end_char(*args):
 
 
 def func_for_print_args(*args):
+    """将传入的事件参数全部打印出来"""
     print(args)
 
-
-def func_for_menu(*args):
-    text = args[0].text()
-    if text == "串口调试":
-        diaPortAPP.exec()
-    if text == "手柄映射设置":
-        diaJoyAPP.exec()
-
 def dialog_joy_setting_update(dict):
+    """传入手柄配置字典，刷新手柄设置菜单中的当前配置"""
     dialog_joyconfig.nowSettingShow.clear()
     motoName = ["导管递送", "导丝递送", "导丝旋转"]
     for axis_bind_tuple in dict["axis"]:
         motoID, axis, fromLow, fromHigh, toLow, toHigh = axis_bind_tuple
         dialog_joyconfig.nowSettingShow.addItem(f"轴{axis}: {motoName[motoID]}\n    ({fromLow},{fromHigh})->({toLow},{toHigh})")
     pass
-        
+
+
+def disable_swicher(button_id):
+    """绑定禁用-启用按钮的方法"""
+    button = None
+    if button_id == 0:
+        button = main_window.cath_disable_button
+    elif button_id == 1:
+        button = main_window.wire_disable_button
+    elif button_id == 2:
+        button = main_window.wire_rot_disable_button
+    if button is not None:
+        text = button.text()
+        if text[2:4] == "禁止":
+            button.setText(f"{text[0:2]}启用{text[4::]}")
+            SurgRobot.change_disable_state(button_id, True)
+        elif text[2:4] == "启用":
+            button.setText(f"{text[0:2]}禁止{text[4::]}")
+            SurgRobot.change_disable_state(button_id, False)
+        else:
+            print(f"异常值: {text}")
 
 def bind_methods():
-    """为各个小部件绑定函数"""
+    """为各个小部件绑定事件"""
     global thread_listen
     # com_select
     main_window.com_select.mousePressEvent = func_for_show_ports
@@ -198,27 +217,33 @@ def bind_methods():
     main_window.gear_level_slider.setPageStep(1)
     main_window.gear_level_slider.valueChanged.connect(func_for_gearlevel_change)
     # menu
-    main_window.menu.triggered.connect(func_for_menu)
+    main_window.menu_joySet.triggered.connect(diaJoyAPP.exec)
+    main_window.menu_Port.triggered.connect(diaPortAPP.exec)
     # dialog_port
     dialog_port.pushButton.clicked.connect(func_for_send_serial_msg)
     dialog_port.pushButton_2.clicked.connect(dialog_port.recv_Text.clear)
     dialog_port.end_select.currentIndexChanged.connect(func_for_select_end_char)
     dialog_port.AutoLast.clicked.connect(thread_listen.jump_to_last_line)
     thread_listen.worker.jump_sig.connect(dialog_port.recv_Text.setTextCursor)
+    thread_listen.worker.send_char_sig.connect(cursor.insertText)
     diaPortAPP.showEvent = func_for_open_serial_dialog
     diaPortAPP.closeEvent = func_for_close_serial_dialog
     # dialog_joy
     dialog_joyconfig.addSettingButton.clicked.connect(axisAPP.exec)
     dialog_joyconfig.nowSettingShow.itemDoubleClicked.connect(func_for_print_args)
-    thread_joylisten.signal_boject.sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
+    thread_joylisten.signal_boject.text_sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
     thread_joylisten.signal_boject.dic_sender.connect(dialog_joy_setting_update)
-    # dialog_joyconfig.joyStateShow.textCursor()
     diaJoyAPP.rejected.connect(func_for_close_joySet_dialog)
     diaJoyAPP.showEvent = func_for_open_joySet_dialog
     diaJoyAPP.closeEvent = func_for_close_joySet_dialog
-    # buttons
+    # buttons: steps
     main_window.all_stop_button.clicked.connect(SurgRobot.all_stop) 
-    main_window.cath_up_button.clicked.connect(save_joy_options)  
+    main_window.cath_up_button.clicked.connect(save_joy_options)
+    # buttons: disable_state
+    main_window.cath_disable_button.clicked.connect(lambda: disable_swicher(0))
+    main_window.wire_disable_button.clicked.connect(lambda: disable_swicher(1))
+    main_window.wire_rot_disable_button.clicked.connect(lambda: disable_swicher(2))
+    
     pass
 
 def close_methods(*args):
@@ -230,12 +255,10 @@ def close_methods(*args):
     JoyStick.close_joystick()
 
     
-
 def init_methods(*args):
     """主函数开始运行时的动作"""
     load_joy_options()
     load_options()
-    
     open_serial_thread()
     open_joy_thread()
 
@@ -262,21 +285,15 @@ def load_options():
     
     dialog_port.end_select.setCurrentIndex(temp_robo_options["end_char"])
 
-
-if __name__ == "__main__":
-    # app = QApplication(sys.argv)
-    # w = QMainWindow()
-
-    # main_window.setupUi(w)
-    main_window.speed_UI_list = [main_window.cath_speed_lcd, 
-                                 main_window.wire_speed_lcd,
-                                 main_window.wire_rotSpeed_lcd]
-    
-
+def main():
     bind_methods()
     init_methods()
+    w.closeEvent = close_methods
+    w.show()
+    sys.exit(app.exec())
+
+if __name__ == "__main__":
+    main()
     
 
-    w.show()
-    w.closeEvent = close_methods
-    sys.exit(app.exec())
+

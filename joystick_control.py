@@ -223,10 +223,10 @@ class thread_joystick(threading.Thread):
 
 
 class Signal_Worker(QObject):
-    sender = Signal(str)
+    text_sender = Signal(str)
     dic_sender = Signal(dict)
     def send_text(self, text):
-        self.sender.emit(text)
+        self.text_sender.emit(text)
     def send_dict(self, dic):
         self.dic_sender.emit(dic)
 

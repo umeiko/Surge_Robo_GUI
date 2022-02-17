@@ -11,6 +11,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 
 
+
 main_window = Ui_MainWindow()  # 主界面
 
 dialog_port = port_dialog()   # 串口调试助手

@@ -4,9 +4,12 @@ from PySide6.QtCore import Signal, QObject
 from PySide6.QtGui import QTextCursor
 
 class jump_worker(QObject):
-    jump_sig = Signal(QTextCursor)
+    jump_sig  = Signal(QTextCursor)
+    send_char_sig = Signal(str)
     def sendCursor(self, Cursor):
         self.jump_sig.emit(Cursor)
+    def sendChar(self, char):
+        self.send_char_sig.emit(char)
 
 
 class read_thr(threading.Thread):
@@ -19,19 +22,16 @@ class read_thr(threading.Thread):
         self.ser = robot.ser
         self.worker = jump_worker()
         self.portDialog = portDialog
-        self.cursor = self.portDialog.recv_Text.textCursor()
+        self.cursor = portDialog.recv_Text.textCursor()
     
     def jump_to_last_line(self):
         if self.portDialog.AutoLast.isChecked():
             try:
                 self.worker.sendCursor(self.cursor)
-                # self.portDialog.recv_Text.setTextCursor(self.cursor)  # 滚动到游标位置
             except:
                 pass
-
     
     def run(self):
-        self.portDialog.recv_Text.clear()
         temp = b""
         self.isRunning = True
         
@@ -45,7 +45,7 @@ class read_thr(threading.Thread):
                     try:  # 解决汉字等二进制转换的问题
                         text_ = temp.decode(encoding="utf-8")
                         temp = b""
-                        self.cursor.insertText(text_)
+                        self.worker.sendChar(text_)
                     except:
                         pass
                     self.jump_to_last_line()

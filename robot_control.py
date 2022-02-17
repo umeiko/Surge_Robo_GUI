@@ -1,13 +1,15 @@
-from pickle import NONE
 import serial
 import serial.tools.list_ports
 import struct
 import threading
 import time
+from PySide6.QtCore import Signal, QObject
 
 
-class Robot():
-    def __init__(self,COM_num=None, main_window=None):
+class Robot(QObject):
+    spd_signal = Signal(int, int)  # id, spd
+    def __init__(self,COM_num=None):
+        super(Robot, self).__init__()
         self.read_lock = threading.Lock()
         self.write_lock = threading.Lock()
         self.ser = serial.Serial()
@@ -21,7 +23,6 @@ class Robot():
         else:
             self.ser.port = None
             self.position = None
-        self.main_window = main_window
         self.port_list = []
 
     def get_position(self):
@@ -53,8 +54,7 @@ class Robot():
         return (x, y)
 
     def set_speed_freq(self, id, freq):
-        """设置步进电机的速度"""
-        freq = self.gear_level * freq
+        """设置步进电机的驱动频率"""
         msg = f":{id} {round(freq, 2)}\r\n".encode()
         if self.ser.isOpen():
             self.write_lock.acquire()
@@ -64,8 +64,9 @@ class Robot():
             print(msg)
     
     def set_speed(self, id, spd):
-        if self.main_window is not None:
-            self.main_window.speed_UI_list[id].display(int(spd))
+        """设置某一轴的速度"""
+        spd = self.gear_level * spd
+        self.spd_signal.emit(id, spd)
         self.set_speed_freq(id, spd)
     
     def scan_ports(self):
@@ -133,7 +134,7 @@ class Robot():
     def all_stop(self):
         """停止所有的电机运动"""
         for i in range(3):
-            self.set_speed_freq(i)
+            self.set_speed_freq(i,0)
     
     def flush_ser(self):
         """清除串口缓冲区的内容"""
@@ -141,6 +142,10 @@ class Robot():
             self.read_lock.acquire()
             self.ser.read_all()
             self.read_lock.release()
+    
+    def change_disable_state(self, id, state):
+        """更改介入器械的锁定-启用状态"""
+        pass
             
         
         

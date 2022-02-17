@@ -223,10 +223,10 @@ class thread_joystick(threading.Thread):
 
 
 class Signal_Worker(QObject):
-    sender = Signal(str)
+    text_sender = Signal(str)
     dic_sender = Signal(dict)
     def send_text(self, text):
-        self.sender.emit(text)
+        self.text_sender.emit(text)
     def send_dict(self, dic):
         self.dic_sender.emit(dic)
 
@@ -271,6 +271,8 @@ class flash_joyState_text(threading.Thread):
     def get_state(self):
         state_str = ""
         indent_str = ""
+        for event in pygame.event.get():
+            pass
         try:
             jid = self.joy.get_instance_id()
         except AttributeError:

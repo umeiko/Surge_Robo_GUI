@@ -134,7 +134,7 @@ class Robot(QObject):
     def all_stop(self):
         """停止所有的电机运动"""
         for i in range(3):
-            self.set_speed_freq(i)
+            self.set_speed_freq(i,0)
     
     def flush_ser(self):
         """清除串口缓冲区的内容"""

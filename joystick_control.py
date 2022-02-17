@@ -271,6 +271,8 @@ class flash_joyState_text(threading.Thread):
     def get_state(self):
         state_str = ""
         indent_str = ""
+        for event in pygame.event.get():
+            pass
         try:
             jid = self.joy.get_instance_id()
         except AttributeError:

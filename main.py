@@ -1,4 +1,4 @@
-from mainWindow import Ui_MainWindow
+from mainwindow import Ui_MainWindow
 from portDialog import Ui_Dialog as port_dialog
 from joystickDialog import Ui_Dialog as joystick_dialog
 from axisSetDialog import Ui_Dialog as axis_dialog
@@ -109,6 +109,7 @@ def func_for_select_joystick(*args):
     robo_options["last_joy"] = index
     
 def func_for_gearlevel_change(*args):
+    """更改速度档位的函数"""
     SurgRobot.gear_level = (main_window.gear_level_slider.value() * 0.2)
     print(SurgRobot.gear_level)
     pass
@@ -241,10 +242,11 @@ def bind_methods():
     thread_joylisten.signal_boject.dic_sender.connect(dialog_joy_setting_update)
     diaJoyAPP.rejected.connect(func_for_close_joySet_dialog)
     diaJoyAPP.showEvent = func_for_open_joySet_dialog
-    diaJoyAPP.closeEvent = func_for_close_joySet_dialog
+    diaJoyAPP.leaveEvent = func_for_close_joySet_dialog
+
     # buttons: steps
     main_window.all_stop_button.clicked.connect(SurgRobot.all_stop) 
-    main_window.cath_up_button.clicked.connect(save_joy_options)
+    main_window.cath_up_button.clicked.connect(SurgRobot.all_stop)
     # buttons: disable_state
     main_window.cath_disable_button.clicked.connect(lambda: disable_swicher(0))
     main_window.wire_disable_button.clicked.connect(lambda: disable_swicher(1))

@@ -44,6 +44,9 @@ thread_listen.name = "串口调试助手线程"
 thread_joylisten = flash_joyState_text()
 thread_joylisten.name = "手柄调试助手线程"
 cursor = dialog_port.recv_Text.textCursor()
+flag = True
+global index
+index = -1
 
 robo_options = {
     "temp_ports_list": [],
@@ -238,12 +241,14 @@ def bind_methods():
     diaPortAPP.closeEvent = func_for_close_serial_dialog
     # dialog_joy
     dialog_joyconfig.addSettingButton.clicked.connect(axisAPP.exec)
-    dialog_joyconfig.nowSettingShow.itemDoubleClicked.connect(func_for_print_args)
     thread_joylisten.signal_boject.text_sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
     thread_joylisten.signal_boject.dic_sender.connect(dialog_joy_setting_update)
+    diaJoyAPP.accepted.connect(func_for_close_joySet_dialog)
     diaJoyAPP.rejected.connect(func_for_close_joySet_dialog)
+    dialog_joyconfig.nowSettingShow.itemDoubleClicked.connect(change_joyset)
     diaJoyAPP.showEvent = func_for_open_joySet_dialog
-    diaJoyAPP.leaveEvent = func_for_close_joySet_dialog
+    # dialog_axis_add
+    dialog_axis_add.buttonBox.accepted.connect(save_joyset)
 
     # buttons: steps
     main_window.all_stop_button.clicked.connect(SurgRobot.all_stop) 
@@ -252,7 +257,8 @@ def bind_methods():
     main_window.cath_disable_button.clicked.connect(lambda: disable_swicher(0))
     main_window.wire_disable_button.clicked.connect(lambda: disable_swicher(1))
     main_window.wire_rot_disable_button.clicked.connect(lambda: disable_swicher(2))
-    
+
+
     pass
 
 def close_methods(*args):
@@ -271,6 +277,46 @@ def init_methods(*args):
     open_serial_thread()
     open_joy_thread()
 
+def save_joyset():
+    global index
+    global flag
+    import json
+    with open("joy_config.json", 'r') as js_file:
+      temp_robo_options = json.load(js_file)
+      joy_config = temp_robo_options  
+    if flag:  
+       if  int(dialog_axis_add.motoSelect.currentIndex())>0: 
+          joy_config["default"]["axis"].append([int(dialog_axis_add.motoSelect.currentIndex())-1,int(dialog_axis_add.axisSelect.currentText()),float(dialog_axis_add.lowAxis.value()),float(dialog_axis_add.highAxis.value()),float(dialog_axis_add.lowSpeed.value()),float(dialog_axis_add.highSpeed.value())])
+    else:
+      flag = True
+      if  int(dialog_axis_add.motoSelect.currentIndex()) > 0:
+        joy_config["default"]["axis"][index]  =   [int(dialog_axis_add.motoSelect.currentIndex())-1,int(dialog_axis_add.axisSelect.currentText()),float(dialog_axis_add.lowAxis.value()),float(dialog_axis_add.highAxis.value()),float(dialog_axis_add.lowSpeed.value()),float(dialog_axis_add.highSpeed.value())] 
+      else:
+          del joy_config["default"]["axis"][index]
+    with open("joy_config.json", 'w') as js_file:
+      js_string = json.dumps(joy_config, sort_keys=True, indent=4, separators=(',', ': '))
+      js_file.write(js_string)
+    load_joy_options()
+    thread_joylisten.set_joy(robo_options["last_joy"]-1)
+
+def change_joyset(*args):
+    # print(args[0].text())
+    
+    import json
+    with open("joy_config.json", 'r') as js_file:
+      temp_robo_options = json.load(js_file)
+      joy_config = temp_robo_options
+    dialog_axis_add.motoSelect.setCurrentIndex(joy_config['default']['axis'][dialog_joyconfig.nowSettingShow.currentRow()][0]+1)
+    dialog_axis_add.axisSelect.setCurrentText(str(joy_config['default']['axis'][dialog_joyconfig.nowSettingShow.currentRow()][1]))
+    dialog_axis_add.lowAxis.setValue(joy_config['default']['axis'][dialog_joyconfig.nowSettingShow.currentRow()][2])
+    dialog_axis_add.highAxis.setValue(joy_config['default']['axis'][dialog_joyconfig.nowSettingShow.currentRow()][3])
+    dialog_axis_add.lowSpeed.setValue(joy_config['default']['axis'][dialog_joyconfig.nowSettingShow.currentRow()][4])
+    dialog_axis_add.highSpeed.setValue(joy_config['default']['axis'][dialog_joyconfig.nowSettingShow.currentRow()][5])
+    global index
+    global flag
+    flag = False
+    index = dialog_joyconfig.nowSettingShow.currentRow()
+    axisAPP.exec()  
 
 def save_options():
     """导出配置到文件中"""

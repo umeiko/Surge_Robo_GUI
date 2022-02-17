@@ -65,7 +65,7 @@ class Ui_Dialog(object):
         self.gridLayout.addWidget(self.label_4, 1, 0, 1, 1)
 
         self.axisSelect = QComboBox(Dialog)
-        information = ["1","2","3","4","5","6"]
+        information = ["0","1","2","3","4","5"]
         self.axisSelect.setObjectName(u"axisSelect")
         self.axisSelect.addItems(information)
         self.axisSelect.setMinimumSize(QSize(100, 0))

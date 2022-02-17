@@ -44,9 +44,9 @@ thread_listen.name = "串口调试助手线程"
 thread_joylisten = flash_joyState_text()
 thread_joylisten.name = "手柄调试助手线程"
 cursor = dialog_port.recv_Text.textCursor()
-flag = True
-global index
-index = -1
+
+joy_config_flag = True
+joy_config_index = -1
 
 robo_options = {
     "temp_ports_list": [],
@@ -278,21 +278,21 @@ def init_methods(*args):
     open_joy_thread()
 
 def save_joyset():
-    global index
-    global flag
+    global joy_config_index
+    global joy_config_flag
     import json
     with open("joy_config.json", 'r') as js_file:
       temp_robo_options = json.load(js_file)
       joy_config = temp_robo_options  
-    if flag:  
+    if joy_config_flag:  
        if  int(dialog_axis_add.motoSelect.currentIndex())>0: 
           joy_config["default"]["axis"].append([int(dialog_axis_add.motoSelect.currentIndex())-1,int(dialog_axis_add.axisSelect.currentText()),float(dialog_axis_add.lowAxis.value()),float(dialog_axis_add.highAxis.value()),float(dialog_axis_add.lowSpeed.value()),float(dialog_axis_add.highSpeed.value())])
     else:
-      flag = True
+      joy_config_flag = True
       if  int(dialog_axis_add.motoSelect.currentIndex()) > 0:
-        joy_config["default"]["axis"][index]  =   [int(dialog_axis_add.motoSelect.currentIndex())-1,int(dialog_axis_add.axisSelect.currentText()),float(dialog_axis_add.lowAxis.value()),float(dialog_axis_add.highAxis.value()),float(dialog_axis_add.lowSpeed.value()),float(dialog_axis_add.highSpeed.value())] 
+        joy_config["default"]["axis"][joy_config_index]  =   [int(dialog_axis_add.motoSelect.currentIndex())-1,int(dialog_axis_add.axisSelect.currentText()),float(dialog_axis_add.lowAxis.value()),float(dialog_axis_add.highAxis.value()),float(dialog_axis_add.lowSpeed.value()),float(dialog_axis_add.highSpeed.value())] 
       else:
-          del joy_config["default"]["axis"][index]
+          del joy_config["default"]["axis"][joy_config_index]
     with open("joy_config.json", 'w') as js_file:
       js_string = json.dumps(joy_config, sort_keys=True, indent=4, separators=(',', ': '))
       js_file.write(js_string)
@@ -312,10 +312,10 @@ def change_joyset(*args):
     dialog_axis_add.highAxis.setValue(joy_config['default']['axis'][dialog_joyconfig.nowSettingShow.currentRow()][3])
     dialog_axis_add.lowSpeed.setValue(joy_config['default']['axis'][dialog_joyconfig.nowSettingShow.currentRow()][4])
     dialog_axis_add.highSpeed.setValue(joy_config['default']['axis'][dialog_joyconfig.nowSettingShow.currentRow()][5])
-    global index
-    global flag
-    flag = False
-    index = dialog_joyconfig.nowSettingShow.currentRow()
+    global joy_config_index
+    global joy_config_flag
+    joy_config_flag = False
+    joy_config_index = dialog_joyconfig.nowSettingShow.currentRow()
     axisAPP.exec()  
 
 def save_options():

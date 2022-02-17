@@ -11,20 +11,20 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 
 
-main_window = Ui_MainWindow()
+main_window = Ui_MainWindow()  # 主界面
 
-dialog_port = port_dialog()
-dialog_joyconfig = joystick_dialog()
-dialog_axis_add = axis_dialog()
+dialog_port = port_dialog()   # 串口调试助手
+dialog_joyconfig = joystick_dialog()  # 手柄设置窗口
+dialog_axis_add = axis_dialog()   # 手柄轴设置窗口
 
 QueryTimer = QTimer()
 QueryTimer.setInterval(10)
 app = QApplication(sys.argv)
 w = QMainWindow()
 
-diaPortAPP = QDialog()
-diaJoyAPP  = QDialog()
-axisAPP = QDialog()
+diaPortAPP = QDialog()  # 串口调试助手
+diaJoyAPP  = QDialog()  # 手柄设置窗口
+axisAPP = QDialog()     # 手柄轴设置窗口
 
 dialog_joyconfig.setupUi(diaJoyAPP)
 dialog_port.setupUi(diaPortAPP)
@@ -36,7 +36,7 @@ main_window.speed_UI_list = [main_window.cath_speed_lcd,
 
 
 
-SurgRobot = Robot(main_window=main_window)
+SurgRobot = Robot()
 JoyStick = joystick_manager(SurgRobot, main_window)
 thread_listen    = serial_widget_thread.read_thr(SurgRobot, dialog_port)
 thread_listen.name = "串口调试助手线程"
@@ -174,6 +174,10 @@ def func_for_print_args(*args):
     """将传入的事件参数全部打印出来"""
     print(args)
 
+def func_for_lcd_speed(*args):
+    motoId, spd = args
+    main_window.speed_UI_list[motoId].display(int(spd))
+
 def dialog_joy_setting_update(dict):
     """传入手柄配置字典，刷新手柄设置菜单中的当前配置"""
     dialog_joyconfig.nowSettingShow.clear()
@@ -204,9 +208,11 @@ def disable_swicher(button_id):
         else:
             print(f"异常值: {text}")
 
+
 def bind_methods():
     """为各个小部件绑定事件"""
     global thread_listen
+    SurgRobot.spd_signal.connect(func_for_lcd_speed)
     # com_select
     main_window.com_select.mousePressEvent = func_for_show_ports
     main_window.com_select.currentIndexChanged.connect(func_for_select_port) 

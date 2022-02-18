@@ -143,6 +143,7 @@ def func_for_open_joySet_dialog(*args):
     if index > 0:
         thread_joylisten.set_joy(robo_options["last_joy"]-1)
     else:
+        dialog_joy_setting_update(load_joy_options()["default"])
         dialog_joyconfig.joyStateShow.append("手柄未选择")
 
 def func_for_close_joySet_dialog(*args):
@@ -286,22 +287,32 @@ def save_joyset():
       joy_config = temp_robo_options  
     if joy_config_flag:  
        if  int(dialog_axis_add.motoSelect.currentIndex())>0: 
-          joy_config["default"]["axis"].append([int(dialog_axis_add.motoSelect.currentIndex())-1,int(dialog_axis_add.axisSelect.currentText()),float(dialog_axis_add.lowAxis.value()),float(dialog_axis_add.highAxis.value()),float(dialog_axis_add.lowSpeed.value()),float(dialog_axis_add.highSpeed.value())])
+          joy_config["default"]["axis"].append(
+              [int(dialog_axis_add.motoSelect.currentIndex())-1,
+              int(dialog_axis_add.axisSelect.currentText()),
+              float(dialog_axis_add.lowAxis.value()),
+              float(dialog_axis_add.highAxis.value()),
+              float(dialog_axis_add.lowSpeed.value()),
+              float(dialog_axis_add.highSpeed.value())])
     else:
       joy_config_flag = True
       if  int(dialog_axis_add.motoSelect.currentIndex()) > 0:
-        joy_config["default"]["axis"][joy_config_index]  =   [int(dialog_axis_add.motoSelect.currentIndex())-1,int(dialog_axis_add.axisSelect.currentText()),float(dialog_axis_add.lowAxis.value()),float(dialog_axis_add.highAxis.value()),float(dialog_axis_add.lowSpeed.value()),float(dialog_axis_add.highSpeed.value())] 
+        joy_config["default"]["axis"][joy_config_index] = \
+            [int(dialog_axis_add.motoSelect.currentIndex())-1,
+            int(dialog_axis_add.axisSelect.currentText()),
+            float(dialog_axis_add.lowAxis.value()),
+            float(dialog_axis_add.highAxis.value()),
+            float(dialog_axis_add.lowSpeed.value()),
+            float(dialog_axis_add.highSpeed.value())] 
       else:
           del joy_config["default"]["axis"][joy_config_index]
     with open("joy_config.json", 'w') as js_file:
       js_string = json.dumps(joy_config, sort_keys=True, indent=4, separators=(',', ': '))
       js_file.write(js_string)
     load_joy_options()
-    thread_joylisten.set_joy(robo_options["last_joy"]-1)
+    dialog_joy_setting_update(load_joy_options()["default"])
 
 def change_joyset(*args):
-    # print(args[0].text())
-    
     import json
     with open("joy_config.json", 'r') as js_file:
       temp_robo_options = json.load(js_file)
@@ -337,7 +348,6 @@ def load_options():
 
     if temp_robo_options["temp_joys_list"] == robo_options["temp_joys_list"]:
         main_window.joystick_select.setCurrentIndex(temp_robo_options["last_joy"])
-    
     dialog_port.end_select.setCurrentIndex(temp_robo_options["end_char"])
 
 def main():

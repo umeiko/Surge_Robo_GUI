@@ -37,8 +37,8 @@ def load_joy_options():
     global joy_config
     import json as json
     with open("joy_config.json", 'r') as js_file:
-        temp_robo_options = json.load(js_file)
-        joy_config = temp_robo_options
+        joy_config = json.load(js_file)
+    return joy_config
 
 
 def plus_gaer(robot, widget):

@@ -52,11 +52,6 @@ class Ui_Dialog(object):
 
         self.gridLayout.addWidget(self.nowSettingShow, 1, 1, 1, 3)
 
-        self.addSettingButton = QPushButton(Dialog)
-        self.addSettingButton.setObjectName(u"addSettingButton")
-
-        self.gridLayout.addWidget(self.addSettingButton, 2, 2, 1, 2)
-
         self.saveButton = QPushButton(Dialog)
         self.saveButton.setObjectName(u"saveButton")
 
@@ -66,6 +61,16 @@ class Ui_Dialog(object):
         self.cancelButton.setObjectName(u"cancelButton")
 
         self.gridLayout.addWidget(self.cancelButton, 3, 3, 1, 1)
+
+        self.addSettingButton = QPushButton(Dialog)
+        self.addSettingButton.setObjectName(u"addSettingButton")
+
+        self.gridLayout.addWidget(self.addSettingButton, 2, 3, 1, 1)
+
+        self.addButtonSettingButton = QPushButton(Dialog)
+        self.addButtonSettingButton.setObjectName(u"addButtonSettingButton")
+
+        self.gridLayout.addWidget(self.addButtonSettingButton, 2, 2, 1, 1)
 
 
         self.retranslateUi(Dialog)
@@ -87,8 +92,9 @@ class Ui_Dialog(object):
 "    (-1, 1) -> (-6400, 6400)", None));
         self.nowSettingShow.setSortingEnabled(__sortingEnabled)
 
-        self.addSettingButton.setText(QCoreApplication.translate("Dialog", u"\u6dfb\u52a0\u8bbe\u7f6e", None))
         self.saveButton.setText(QCoreApplication.translate("Dialog", u"\u4fdd\u5b58", None))
         self.cancelButton.setText(QCoreApplication.translate("Dialog", u"\u53d6\u6d88", None))
+        self.addSettingButton.setText(QCoreApplication.translate("Dialog", u"\u6dfb\u52a0\u8f74", None))
+        self.addButtonSettingButton.setText(QCoreApplication.translate("Dialog", u"\u6dfb\u52a0\u6309\u952e", None))
     # retranslateUi
 

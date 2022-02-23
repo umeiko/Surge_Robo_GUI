@@ -291,6 +291,7 @@ def change_style_classic():
     if global_options["skin_mode"] != "classic":
         global_options["skin_mode"] = "classic"
         w.setStyleSheet("")
+        diaPortAPP.setStyleSheet("")
         main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up.png);\n""")
         main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down.png);\n""")
         main_window.wire_up_button.setStyleSheet(u"border-image: url(:/up.png);\n""")
@@ -306,6 +307,7 @@ def change_style_dark():
         global_options["skin_mode"] = "MaterialDark"
         style_file = './resources/QSS/MaterialDark.qss'
         style_sheet = read_qss_file(style_file)
+        diaPortAPP.setStyleSheet(style_sheet)
         w.setStyleSheet(style_sheet)
         main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up_dark.png);\n""")
         main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n""")

@@ -291,14 +291,10 @@ def change_style_classic():
     if global_options["skin_mode"] != "classic":
         global_options["skin_mode"] = "classic"
         w.setStyleSheet("")
-        main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up.png);\n"
-    "")
-        main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down.png);\n"
-    "")
-        main_window.wire_up_button.setStyleSheet(u"border-image: url(:/up.png);\n"
-    "")
-        main_window.wire_down_button.setStyleSheet(u"border-image: url(:/down.png);\n"
-    "")
+        main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up.png);\n""")
+        main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down.png);\n""")
+        main_window.wire_up_button.setStyleSheet(u"border-image: url(:/up.png);\n""")
+        main_window.wire_down_button.setStyleSheet(u"border-image: url(:/down.png);\n""")
         button_icon = QIcon()
         button_icon.addFile(u":/disable.png", QSize(), QIcon.Normal, QIcon.Off)
         main_window.cath_disable_button.setIcon(button_icon)
@@ -311,14 +307,10 @@ def change_style_dark():
         style_file = './resources/QSS/MaterialDark.qss'
         style_sheet = read_qss_file(style_file)
         w.setStyleSheet(style_sheet)
-        main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up_dark.png);\n"
-    "")
-        main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n"
-    "")
-        main_window.wire_up_button.setStyleSheet(u"border-image: url(:/up_dark.png);\n"
-    "")
-        main_window.wire_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n"
-    "")
+        main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up_dark.png);\n""")
+        main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n""")
+        main_window.wire_up_button.setStyleSheet(u"border-image: url(:/up_dark.png);\n""")
+        main_window.wire_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n""")
         button_icon = QIcon()
         button_icon.addFile(u":/disable_dark.png", QSize(), QIcon.Normal, QIcon.Off)
         main_window.cath_disable_button.setIcon(button_icon)

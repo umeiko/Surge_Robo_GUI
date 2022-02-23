@@ -6,8 +6,9 @@ import serial_widget_thread
 from robot_control import Robot
 from joystick_control import joystick_manager, flash_joyState_text, save_joy_options, load_joy_options
 from robot_control import Robot
+from PySide6.QtGui import QIcon
 import sys
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer,QSize
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 
 
@@ -47,6 +48,7 @@ cursor = dialog_port.recv_Text.textCursor()
 
 joy_config_flag = True
 joy_config_index = -1
+fashion_flag = False
 
 robo_options = {
     "temp_ports_list": [],
@@ -230,6 +232,8 @@ def bind_methods():
     # menu
     main_window.menu_joySet.triggered.connect(diaJoyAPP.exec)
     main_window.menu_Port.triggered.connect(diaPortAPP.exec)
+    main_window.style_dark.triggered.connect(change_style_dark)
+    main_window.style_classic.triggered.connect(change_style_classic)
     # dialog_port
     dialog_port.pushButton.clicked.connect(func_for_send_serial_msg)
     dialog_port.pushButton_2.clicked.connect(dialog_port.recv_Text.clear)
@@ -276,6 +280,46 @@ def init_methods(*args):
     load_options()
     open_serial_thread()
     open_joy_thread()
+
+def change_style_classic():
+    global fashion_flag
+    if fashion_flag:
+      fashion_flag = False
+      w.setStyleSheet("")
+      main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up.png);\n"
+"")
+      main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down.png);\n"
+"")
+      main_window.wire_up_button.setStyleSheet(u"border-image: url(:/up.png);\n"
+"")
+      main_window.wire_down_button.setStyleSheet(u"border-image: url(:/down.png);\n"
+"")
+      icon1 = QIcon()
+      icon1.addFile(u":/disable.png", QSize(), QIcon.Normal, QIcon.Off)
+      main_window.cath_disable_button.setIcon(icon1)
+      main_window.wire_disable_button.setIcon(icon1)
+      w.exec()
+
+def change_style_dark():
+    global fashion_flag 
+    if fashion_flag == False:
+      fashion_flag = True
+      style_file = './resources/QSS/MaterialDark.qss'
+      style_sheet = QSSLoader.read_qss_file(style_file)
+      w.setStyleSheet(style_sheet)
+      main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up_dark.png);\n"
+"")
+      main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n"
+"")
+      main_window.wire_up_button.setStyleSheet(u"border-image: url(:/up_dark.png);\n"
+"")
+      main_window.wire_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n"
+"")
+      icon1 = QIcon()
+      icon1.addFile(u":/disable_dark.png", QSize(), QIcon.Normal, QIcon.Off)
+      main_window.cath_disable_button.setIcon(icon1)
+      main_window.wire_disable_button.setIcon(icon1)
+      w.exec()    
 
 def save_joyset():
     global joy_config_index
@@ -339,6 +383,15 @@ def load_options():
         main_window.joystick_select.setCurrentIndex(temp_robo_options["last_joy"])
     
     dialog_port.end_select.setCurrentIndex(temp_robo_options["end_char"])
+
+class QSSLoader:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def read_qss_file(qss_file_name):
+        with open(qss_file_name, 'r',  encoding='UTF-8') as file:
+            return file.read()      
 
 def main():
     bind_methods()

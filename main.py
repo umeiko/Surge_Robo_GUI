@@ -4,7 +4,7 @@ from joystickDialog import Ui_Dialog as joystick_dialog
 from axisSetDialog import Ui_Dialog as axis_dialog
 import serial_widget_thread
 from robot_control import Robot
-from joystick_control import joystick_manager, flash_joyState_text, save_joy_options, load_joy_options
+from joystick_control import joystick_manager, flash_joyState_text, load_joy_options
 from robot_control import Robot
 from PySide6.QtGui import QIcon
 import sys
@@ -46,7 +46,7 @@ thread_joylisten = flash_joyState_text()
 thread_joylisten.name = "手柄调试助手线程"
 cursor = dialog_port.recv_Text.textCursor()
 
-joy_config_flag = True
+joy_config_flag  = True
 joy_config_index = -1
 fashion_flag = False
 
@@ -138,6 +138,7 @@ def open_joy_thread():
     thread_joylisten.start()
 
 def func_for_open_joySet_dialog(*args):
+    """打开手柄调试窗口时运行的函数"""
     dialog_joyconfig.joyStateShow.clear()
     global thread_joylisten
     JoyStick.close_joystick()
@@ -145,9 +146,11 @@ def func_for_open_joySet_dialog(*args):
     if index > 0:
         thread_joylisten.set_joy(robo_options["last_joy"]-1)
     else:
+        dialog_joy_setting_update(load_joy_options()["default"])
         dialog_joyconfig.joyStateShow.append("手柄未选择")
 
 def func_for_close_joySet_dialog(*args):
+    """关闭手柄调试窗口时运行的函数"""
     global thread_joylisten
     thread_joylisten.ignore_joy()
     index = robo_options["last_joy"]
@@ -182,6 +185,7 @@ def func_for_print_args(*args):
     print(args)
 
 def func_for_lcd_speed(*args):
+    """刷新速度显示窗口"""
     motoId, spd = args
     main_window.speed_UI_list[motoId].display(int(spd))
 
@@ -263,8 +267,6 @@ def bind_methods():
     main_window.wire_rot_disable_button.clicked.connect(lambda: disable_swicher(2))
 
 
-    pass
-
 def close_methods(*args):
     """主窗口关闭时进行的动作"""
     save_options()
@@ -280,6 +282,7 @@ def init_methods(*args):
     load_options()
     open_serial_thread()
     open_joy_thread()
+
 
 def change_style_classic():
     global fashion_flag
@@ -321,7 +324,8 @@ def change_style_dark():
       main_window.wire_disable_button.setIcon(icon1)
       w.exec()    
 
-def save_joyset():
+def save_joyset(*args):
+    """保存手柄设置运行的函数"""
     global joy_config_index
     global joy_config_flag
     import json
@@ -330,22 +334,33 @@ def save_joyset():
       joy_config = temp_robo_options  
     if joy_config_flag:  
        if  int(dialog_axis_add.motoSelect.currentIndex())>0: 
-          joy_config["default"]["axis"].append([int(dialog_axis_add.motoSelect.currentIndex())-1,int(dialog_axis_add.axisSelect.currentText()),float(dialog_axis_add.lowAxis.value()),float(dialog_axis_add.highAxis.value()),float(dialog_axis_add.lowSpeed.value()),float(dialog_axis_add.highSpeed.value())])
+          joy_config["default"]["axis"].append(
+              [int(dialog_axis_add.motoSelect.currentIndex())-1,
+              int(dialog_axis_add.axisSelect.currentText()),
+              float(dialog_axis_add.lowAxis.value()),
+              float(dialog_axis_add.highAxis.value()),
+              float(dialog_axis_add.lowSpeed.value()),
+              float(dialog_axis_add.highSpeed.value())])
     else:
       joy_config_flag = True
       if  int(dialog_axis_add.motoSelect.currentIndex()) > 0:
-        joy_config["default"]["axis"][joy_config_index]  =   [int(dialog_axis_add.motoSelect.currentIndex())-1,int(dialog_axis_add.axisSelect.currentText()),float(dialog_axis_add.lowAxis.value()),float(dialog_axis_add.highAxis.value()),float(dialog_axis_add.lowSpeed.value()),float(dialog_axis_add.highSpeed.value())] 
+        joy_config["default"]["axis"][joy_config_index] = \
+            [int(dialog_axis_add.motoSelect.currentIndex())-1,
+            int(dialog_axis_add.axisSelect.currentText()),
+            float(dialog_axis_add.lowAxis.value()),
+            float(dialog_axis_add.highAxis.value()),
+            float(dialog_axis_add.lowSpeed.value()),
+            float(dialog_axis_add.highSpeed.value())] 
       else:
           del joy_config["default"]["axis"][joy_config_index]
     with open("joy_config.json", 'w') as js_file:
       js_string = json.dumps(joy_config, sort_keys=True, indent=4, separators=(',', ': '))
       js_file.write(js_string)
     load_joy_options()
-    thread_joylisten.set_joy(robo_options["last_joy"]-1)
+    dialog_joy_setting_update(load_joy_options()["default"])
 
 def change_joyset(*args):
-    # print(args[0].text())
-    
+    """保存手柄设置运行的函数"""
     import json
     with open("joy_config.json", 'r') as js_file:
       temp_robo_options = json.load(js_file)
@@ -381,7 +396,6 @@ def load_options():
 
     if temp_robo_options["temp_joys_list"] == robo_options["temp_joys_list"]:
         main_window.joystick_select.setCurrentIndex(temp_robo_options["last_joy"])
-    
     dialog_port.end_select.setCurrentIndex(temp_robo_options["end_char"])
 
 class QSSLoader:
@@ -399,6 +413,7 @@ def main():
     w.closeEvent = close_methods
     w.show()
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()

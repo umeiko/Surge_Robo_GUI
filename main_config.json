@@ -1,13 +1,9 @@
 {
     "end_char": 3,
     "last_joy": 1,
-    "last_port": 3,
+    "last_port": 0,
     "temp_joys_list": [
         "PS4 Controller"
     ],
-    "temp_ports_list": [
-        "Prolific PL2303GT USB Serial COM Port (COM3)",
-        "\u901a\u4fe1\u7aef\u53e3 (COM1)",
-        "USB-SERIAL CH340K (COM6)"
-    ]
+    "temp_ports_list": []
 }

@@ -287,42 +287,42 @@ def init_methods(*args):
 def change_style_classic():
     global fashion_flag
     if fashion_flag:
-      fashion_flag = False
-      w.setStyleSheet("")
-      main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up.png);\n"
-"")
-      main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down.png);\n"
-"")
-      main_window.wire_up_button.setStyleSheet(u"border-image: url(:/up.png);\n"
-"")
-      main_window.wire_down_button.setStyleSheet(u"border-image: url(:/down.png);\n"
-"")
-      icon1 = QIcon()
-      icon1.addFile(u":/disable.png", QSize(), QIcon.Normal, QIcon.Off)
-      main_window.cath_disable_button.setIcon(icon1)
-      main_window.wire_disable_button.setIcon(icon1)
-      w.exec()
+        fashion_flag = False
+        w.setStyleSheet("")
+        main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up.png);\n"
+    "")
+        main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down.png);\n"
+    "")
+        main_window.wire_up_button.setStyleSheet(u"border-image: url(:/up.png);\n"
+    "")
+        main_window.wire_down_button.setStyleSheet(u"border-image: url(:/down.png);\n"
+    "")
+        icon1 = QIcon()
+        icon1.addFile(u":/disable.png", QSize(), QIcon.Normal, QIcon.Off)
+        main_window.cath_disable_button.setIcon(icon1)
+        main_window.wire_disable_button.setIcon(icon1)
+        # w.exec()
 
 def change_style_dark():
     global fashion_flag 
     if fashion_flag == False:
-      fashion_flag = True
-      style_file = './resources/QSS/MaterialDark.qss'
-      style_sheet = QSSLoader.read_qss_file(style_file)
-      w.setStyleSheet(style_sheet)
-      main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up_dark.png);\n"
-"")
-      main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n"
-"")
-      main_window.wire_up_button.setStyleSheet(u"border-image: url(:/up_dark.png);\n"
-"")
-      main_window.wire_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n"
-"")
-      icon1 = QIcon()
-      icon1.addFile(u":/disable_dark.png", QSize(), QIcon.Normal, QIcon.Off)
-      main_window.cath_disable_button.setIcon(icon1)
-      main_window.wire_disable_button.setIcon(icon1)
-      w.exec()    
+        fashion_flag = True
+        style_file = './resources/QSS/MaterialDark.qss'
+        style_sheet = QSSLoader.read_qss_file(style_file)
+        w.setStyleSheet(style_sheet)
+        main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up_dark.png);\n"
+    "")
+        main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n"
+    "")
+        main_window.wire_up_button.setStyleSheet(u"border-image: url(:/up_dark.png);\n"
+    "")
+        main_window.wire_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n"
+    "")
+        icon1 = QIcon()
+        icon1.addFile(u":/disable_dark.png", QSize(), QIcon.Normal, QIcon.Off)
+        main_window.cath_disable_button.setIcon(icon1)
+        main_window.wire_disable_button.setIcon(icon1)
+        # w.exec()    
 
 def save_joyset(*args):
     """保存手柄设置运行的函数"""

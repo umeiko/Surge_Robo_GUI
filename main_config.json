@@ -1,6 +1,6 @@
 {
     "disable_states": [
-        false,
+        true,
         true,
         true
     ],
@@ -8,7 +8,7 @@
     "gear_level": 4,
     "last_joy": 0,
     "last_port": 0,
-    "skin_mode": "MaterialDark",
+    "skin_mode": "classic",
     "temp_joys_list": [],
     "temp_ports_list": []
 }

@@ -204,7 +204,7 @@ def dialog_joy_setting_update(dict):
 
 
 def disable_swicher(button_id, state=None):
-    """绑定禁用-启用按钮的方法"""
+    """绑定禁用-启用按钮的方法, 同时可以改变机器人的禁用情况"""
     button = None
     style_str = ""
     if button_id == 0:
@@ -218,22 +218,8 @@ def disable_swicher(button_id, state=None):
     elif global_options["skin_mode"] == "MaterialDark":
         style_str = "_dark"
     text = button.text()
-    if state is None:
-        if global_options["disable_states"][button_id]:
-            button.setText(f"{text[0:2]}启用{text[4::]}")
-            SurgRobot.change_disable_state(button_id, True)
-            button_icon = QIcon()
-            button_icon.addFile(f":/accept{style_str}.png", QSize(), QIcon.Normal, QIcon.Off)
-            button.setIcon(button_icon)
-            global_options["disable_states"][button_id] = False
-        else:
-            button.setText(f"{text[0:2]}禁止{text[4::]}")
-            SurgRobot.change_disable_state(button_id, False)
-            button_icon = QIcon()
-            button_icon.addFile(f":/disable{style_str}.png", QSize(), QIcon.Normal, QIcon.Off)
-            button.setIcon(button_icon)
-            global_options["disable_states"][button_id] = True
-    else:
+    
+    def set_state(button, state):
         if state:
             button.setText(f"{text[0:2]}禁止{text[4::]}")
             SurgRobot.change_disable_state(button_id, False)
@@ -247,7 +233,15 @@ def disable_swicher(button_id, state=None):
             button_icon = QIcon()
             button_icon.addFile(f":/accept{style_str}.png", QSize(), QIcon.Normal, QIcon.Off)
             button.setIcon(button_icon)
-            global_options["disable_states"][button_id] = False            
+            global_options["disable_states"][button_id] = False 
+
+    if state is None:
+        if global_options["disable_states"][button_id]:
+            set_state(button, False)
+        else:
+            set_state(button, True)
+    else:
+        set_state(button, state)           
 
 
 def bind_methods():

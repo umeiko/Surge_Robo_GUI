@@ -8,6 +8,7 @@ from PySide6.QtCore import Signal, QObject
 
 class Robot(QObject):
     spd_signal = Signal(int, int)  # id, spd
+    port_erro_signal = Signal()
     def __init__(self,COM_num=None):
         super(Robot, self).__init__()
         self.read_lock = threading.Lock()
@@ -31,18 +32,21 @@ class Robot(QObject):
         if self.ser.isOpen:
             self.read_lock.acquire()
             self.write_lock.acquire()
-            self.ser.read_all()
-            msg = b"?\r\n"
-            self.ser.write(msg)
-            
-            a = self.ser.read()
-            for _ in range(1024):
-                b = self.ser.read()
-                if a == b":" and b == b":":
-                    buffer = self.ser.read(16)
-                    break
-                else:
-                    a = b
+            try:
+                self.ser.read_all()
+                msg = b"?\r\n"
+                self.ser.write(msg)
+                
+                a = self.ser.read()
+                for _ in range(1024):
+                    b = self.ser.read()
+                    if a == b":" and b == b":":
+                        buffer = self.ser.read(16)
+                        break
+                    else:
+                        a = b
+            except:
+                self.port_erro_signal.emit()
             self.read_lock.release()
             self.write_lock.release()
         if buffer is not None:
@@ -58,7 +62,10 @@ class Robot(QObject):
         msg = f":{id} {round(freq, 2)}\r\n".encode()
         if self.ser.isOpen():
             self.write_lock.acquire()
-            self.ser.write(msg)
+            try:
+                self.ser.write(msg)
+            except:
+                self.port_erro_signal.emit()
             self.write_lock.release()
         else:
             print(msg)
@@ -114,7 +121,10 @@ class Robot(QObject):
             return False
         if self.ser.isOpen():
             self.write_lock.acquire()
-            self.ser.write(content)
+            try:
+                self.ser.write(content)
+            except:
+                self.port_erro_signal.emit()
             self.write_lock.release()
             return True
         else:
@@ -140,7 +150,10 @@ class Robot(QObject):
         """清除串口缓冲区的内容"""
         if self.ser.isOpen():
             self.read_lock.acquire()
-            self.ser.read_all()
+            try:
+                self.ser.read_all()
+            except:
+                self.port_erro_signal.emit()
             self.read_lock.release()
     
     def change_disable_state(self, id, state):

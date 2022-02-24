@@ -40,7 +40,7 @@ main_window.speed_UI_list = [main_window.cath_speed_lcd,
 
 SurgRobot = Robot()
 JoyStick = joystick_manager(SurgRobot, main_window)
-thread_listen    = serial_widget_thread.read_thr(SurgRobot, dialog_port)
+thread_listen      = serial_widget_thread.read_thr(SurgRobot, dialog_port)
 thread_listen.name = "串口调试助手线程"
 thread_joylisten = flash_joyState_text()
 thread_joylisten.name = "手柄调试助手线程"
@@ -106,7 +106,6 @@ def func_for_show_joysticks(*args):
     """展示手柄的函数"""
     fresh_joystick()
     main_window.joystick_select.showPopup()
-
 
 def func_for_select_joystick(*args):
     """连接并启动某个手柄的函数"""
@@ -243,11 +242,17 @@ def disable_swicher(button_id, state=None):
     else:
         set_state(button, state)           
 
+def func_for_serial_erro(*args):
+    """串口异常处理的函数"""
+    SurgRobot.ser.close()
+    main_window.com_select.setCurrentIndex(0)
+    diaPortAPP.close()
 
 def bind_methods():
     """为各个小部件绑定事件"""
     global thread_listen
     SurgRobot.spd_signal.connect(func_for_lcd_speed)
+    SurgRobot.port_erro_signal.connect(func_for_serial_erro)
     # com_select
     main_window.com_select.mousePressEvent = func_for_show_ports
     main_window.com_select.currentIndexChanged.connect(func_for_select_port) 
@@ -269,6 +274,7 @@ def bind_methods():
     dialog_port.AutoLast.clicked.connect(thread_listen.jump_to_last_line)
     thread_listen.worker.jump_sig.connect(dialog_port.recv_Text.setTextCursor)
     thread_listen.worker.send_char_sig.connect(cursor.insertText)
+    thread_listen.worker.erro_sig.connect(func_for_serial_erro)
     diaPortAPP.showEvent = func_for_open_serial_dialog
     diaPortAPP.closeEvent = func_for_close_serial_dialog
     # dialog_joy

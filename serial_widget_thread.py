@@ -6,6 +6,7 @@ from PySide6.QtGui import QTextCursor
 class jump_worker(QObject):
     jump_sig  = Signal(QTextCursor)
     send_char_sig = Signal(str)
+    erro_sig = Signal()
     def sendCursor(self, Cursor):
         self.jump_sig.emit(Cursor)
     def sendChar(self, char):
@@ -34,11 +35,13 @@ class read_thr(threading.Thread):
     def run(self):
         temp = b""
         self.isRunning = True
-        
         while self.isRunning:
             if self.ser.isOpen() and self.show:
                 self.robot.read_lock.acquire()
-                text = self.ser.read()
+                try:
+                    text = self.ser.read()
+                except:
+                    self.worker.erro_sig.emit()
                 self.robot.read_lock.release()
                 if text:
                     temp += text
@@ -48,9 +51,6 @@ class read_thr(threading.Thread):
                         self.worker.sendChar(text_)
                     except:
                         pass
-                    self.jump_to_last_line()
-                       
+                    self.jump_to_last_line()               
             time.sleep(0.001)
         print("串口打印线程被终止")
-
-

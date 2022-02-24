@@ -3,9 +3,7 @@
     "gear_level": 2,
     "last_joy": 0,
     "last_port": 0,
-    "skin_mode": "MaterialDark",
+    "skin_mode": "classic",
     "temp_joys_list": [],
-    "temp_ports_list": [
-        "\u901a\u4fe1\u7aef\u53e3 (COM1)"
-    ]
+    "temp_ports_list": []
 }

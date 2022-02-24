@@ -65,9 +65,13 @@ class Ui_Dialog(object):
         self.gridLayout.addWidget(self.label_4, 1, 0, 1, 1)
 
         self.axisSelect = QComboBox(Dialog)
-        information = ["0","1","2","3","4","5"]
+        self.axisSelect.addItem("")
+        self.axisSelect.addItem("")
+        self.axisSelect.addItem("")
+        self.axisSelect.addItem("")
+        self.axisSelect.addItem("")
+        self.axisSelect.addItem("")
         self.axisSelect.setObjectName(u"axisSelect")
-        self.axisSelect.addItems(information)
         self.axisSelect.setMinimumSize(QSize(100, 0))
         self.axisSelect.setMaximumSize(QSize(16777215, 16777215))
 
@@ -137,6 +141,13 @@ class Ui_Dialog(object):
         self.label_3.setText(QCoreApplication.translate("Dialog", u"\u5668\u68b0\u901f\u5ea6\u533a\u95f4", None))
         self.label_2.setText(QCoreApplication.translate("Dialog", u"\u624b\u67c4\u8f74\u533a\u95f4", None))
         self.label_4.setText(QCoreApplication.translate("Dialog", u"\u8f74\u53f7", None))
+        self.axisSelect.setItemText(0, QCoreApplication.translate("Dialog", u"0", None))
+        self.axisSelect.setItemText(1, QCoreApplication.translate("Dialog", u"1", None))
+        self.axisSelect.setItemText(2, QCoreApplication.translate("Dialog", u"2", None))
+        self.axisSelect.setItemText(3, QCoreApplication.translate("Dialog", u"3", None))
+        self.axisSelect.setItemText(4, QCoreApplication.translate("Dialog", u"4", None))
+        self.axisSelect.setItemText(5, QCoreApplication.translate("Dialog", u"5", None))
+
         self.label.setText(QCoreApplication.translate("Dialog", u"->", None))
         self.label_5.setText(QCoreApplication.translate("Dialog", u"\u88ab\u64cd\u7eb5\u5668\u68b0", None))
         self.motoSelect.setItemText(0, QCoreApplication.translate("Dialog", u"\u65e0\u64cd\u4f5c", None))

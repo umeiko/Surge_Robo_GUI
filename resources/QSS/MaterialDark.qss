@@ -35,7 +35,7 @@ QPushButton{
 	border-top-color: transparent;
 	border-right-color: transparent;
 	border-left-color: transparent;
-	border-bottom-color: transparent;
+	border-bottom-color: #a9b7c6;
 	border-width: 1px;
 	border-style: solid;
 	color: #a9b7c6;
@@ -337,6 +337,9 @@ QComboBox:!editable:on, QComboBox::drop-down:editable:on {
 QFontComboBox {
 	color: #a9b7c6;	
 	background-color: #1e1d23;
+}
+QGroupBox{
+    color: #a9b7c6;
 }
 QToolBox {
 	color: #a9b7c6;

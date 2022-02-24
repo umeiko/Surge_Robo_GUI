@@ -288,6 +288,7 @@ def init_methods(*args):
 
 
 def change_style_classic():
+    """切换样式到经典"""
     if global_options["skin_mode"] != "classic":
         global_options["skin_mode"] = "classic"
         w.setStyleSheet("")
@@ -305,6 +306,7 @@ def change_style_classic():
         main_window.wire_rot_disable_button.setIcon(button_icon)
 
 def change_style_dark():
+    """切换样式到暗黑"""
     if global_options["skin_mode"] != "MaterialDark":
         global_options["skin_mode"] = "MaterialDark"
         style_file = './resources/QSS/MaterialDark.qss'

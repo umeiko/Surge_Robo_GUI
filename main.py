@@ -58,6 +58,7 @@ global_options = {
     "end_char"       : 0,
     "skin_mode"      : "classic",
     "gear_level"     : 0,
+    "disable_states" : [True, True, True],
 }
 
 
@@ -202,25 +203,51 @@ def dialog_joy_setting_update(dict):
     pass
 
 
-def disable_swicher(button_id):
+def disable_swicher(button_id, state=None):
     """绑定禁用-启用按钮的方法"""
     button = None
+    style_str = ""
     if button_id == 0:
         button = main_window.cath_disable_button
     elif button_id == 1:
         button = main_window.wire_disable_button
     elif button_id == 2:
         button = main_window.wire_rot_disable_button
-    if button is not None:
-        text = button.text()
-        if text[2:4] == "禁止":
+    if global_options["skin_mode"] == "classic":
+        style_str = ""
+    elif global_options["skin_mode"] == "MaterialDark":
+        style_str = "_dark"
+    text = button.text()
+    if state is None:
+        if global_options["disable_states"][button_id]:
             button.setText(f"{text[0:2]}启用{text[4::]}")
             SurgRobot.change_disable_state(button_id, True)
-        elif text[2:4] == "启用":
+            button_icon = QIcon()
+            button_icon.addFile(f":/accept{style_str}.png", QSize(), QIcon.Normal, QIcon.Off)
+            button.setIcon(button_icon)
+            global_options["disable_states"][button_id] = False
+        else:
             button.setText(f"{text[0:2]}禁止{text[4::]}")
             SurgRobot.change_disable_state(button_id, False)
+            button_icon = QIcon()
+            button_icon.addFile(f":/disable{style_str}.png", QSize(), QIcon.Normal, QIcon.Off)
+            button.setIcon(button_icon)
+            global_options["disable_states"][button_id] = True
+    else:
+        if state:
+            button.setText(f"{text[0:2]}禁止{text[4::]}")
+            SurgRobot.change_disable_state(button_id, False)
+            button_icon = QIcon()
+            button_icon.addFile(f":/disable{style_str}.png", QSize(), QIcon.Normal, QIcon.Off)
+            button.setIcon(button_icon)
+            global_options["disable_states"][button_id] = True
         else:
-            print(f"异常值: {text}")
+            button.setText(f"{text[0:2]}启用{text[4::]}")
+            SurgRobot.change_disable_state(button_id, True)
+            button_icon = QIcon()
+            button_icon.addFile(f":/accept{style_str}.png", QSize(), QIcon.Normal, QIcon.Off)
+            button.setIcon(button_icon)
+            global_options["disable_states"][button_id] = False            
 
 
 def bind_methods():
@@ -299,11 +326,15 @@ def change_style_classic():
         main_window.wire_down_button.setStyleSheet(u"border-image: url(:/down.png);\n""")
         main_window.wire_clock_button.setStyleSheet(u"border-image: url(:/clock-wise.png);\n""")
         main_window.wire_antiClock_button.setStyleSheet(u"border-image: url(:/anti-clock-wise.png);\n""")
-        button_icon = QIcon()
-        button_icon.addFile(u":/disable.png", QSize(), QIcon.Normal, QIcon.Off)
-        main_window.cath_disable_button.setIcon(button_icon)
-        main_window.wire_disable_button.setIcon(button_icon)
-        main_window.wire_rot_disable_button.setIcon(button_icon)
+        button_icon_accept, button_icon_disable = QIcon(), QIcon()
+        button_icon_disable.addFile(u":/disable.png", QSize(), QIcon.Normal, QIcon.Off)
+        button_icon_accept.addFile(u":/accept.png", QSize(), QIcon.Normal, QIcon.Off)
+        buttons = [main_window.cath_disable_button, main_window.wire_disable_button, main_window.wire_rot_disable_button]
+        for button, state in zip(buttons, global_options["disable_states"]):
+            if state:
+                button.setIcon(button_icon_disable)
+            else:
+                button.setIcon(button_icon_accept)
 
 def change_style_dark():
     """切换样式到暗黑"""
@@ -319,11 +350,15 @@ def change_style_dark():
         main_window.wire_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n""")
         main_window.wire_clock_button.setStyleSheet(u"border-image: url(:/clock-wise_dark.png);\n""")
         main_window.wire_antiClock_button.setStyleSheet(u"border-image: url(:/anti-clock-wise_dark.png);\n""")
-        button_icon = QIcon()
-        button_icon.addFile(u":/disable_dark.png", QSize(), QIcon.Normal, QIcon.Off)
-        main_window.cath_disable_button.setIcon(button_icon)
-        main_window.wire_disable_button.setIcon(button_icon)
-        main_window.wire_rot_disable_button.setIcon(button_icon) 
+        button_icon_accept, button_icon_disable = QIcon(), QIcon()
+        button_icon_disable.addFile(u":/disable_dark.png", QSize(), QIcon.Normal, QIcon.Off)
+        button_icon_accept.addFile(u":/accept_dark.png", QSize(), QIcon.Normal, QIcon.Off)
+        buttons = [main_window.cath_disable_button, main_window.wire_disable_button, main_window.wire_rot_disable_button]
+        for button, state in zip(buttons, global_options["disable_states"]):
+            if state:
+                button.setIcon(button_icon_disable)
+            else:
+                button.setIcon(button_icon_accept)
 
 def save_joyset(*args):
     """保存手柄设置运行的函数"""
@@ -412,6 +447,10 @@ def load_options():
     if 0 <= temp_robo_options["gear_level"] <= 5:
         SurgRobot.gear_level = temp_robo_options["gear_level"]
         main_window.gear_level_slider.setValue(temp_robo_options["gear_level"])
+    
+    for button_id, state in enumerate(temp_robo_options["disable_states"]):
+        disable_swicher(button_id, state)
+
 
 
 def read_qss_file(qss_file_name):

@@ -262,6 +262,13 @@ def bind_methods():
     # gear_level_slider
     main_window.gear_level_slider.setPageStep(1)
     main_window.gear_level_slider.valueChanged.connect(func_for_gearlevel_change)
+    # step_slider
+    main_window.cath_step_slider.valueChanged.connect(
+        lambda x:main_window.cath_step_text.setText(f"{(0.5+0.01515152*x):.2f}mm"))
+    main_window.wire_step_slider.valueChanged.connect(
+        lambda x:main_window.wire_step_text.setText(f"{(0.5+0.01515152*x):.2f}mm"))
+    main_window.wireRot_step_slider.valueChanged.connect(
+        lambda x:main_window.wireRot_step_text.setText(f"{(5+0.40404*x):.2f}°"))
     # menu
     main_window.menu_joySet.triggered.connect(diaJoyAPP.exec)
     main_window.menu_Port.triggered.connect(diaPortAPP.exec)

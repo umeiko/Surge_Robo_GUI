@@ -383,11 +383,11 @@ QSlider::add-page:horizontal {
     background: white;
 }
 QSlider::add-page:vertical {
-    background: white;
+    background: #04b97f;
 }
 QSlider::sub-page:horizontal {
     background: #04b97f;
 }
 QSlider::sub-page:vertical {
-    background: #04b97f;
+    background: white;
 }

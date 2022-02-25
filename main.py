@@ -6,7 +6,7 @@ import serial_widget_thread
 from robot_control import Robot
 from joystick_control import joystick_manager, flash_joyState_text, load_joy_options
 from robot_control import Robot
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QShortcut
 import sys
 from PySide6.QtCore import QTimer,QSize
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
@@ -268,6 +268,9 @@ def bind_methods():
     main_window.style_dark.triggered.connect(change_style_dark)
     main_window.style_classic.triggered.connect(change_style_classic)
     # dialog_port
+    shortcut = QShortcut(diaPortAPP)
+    shortcut.setKey(u'Return')
+    shortcut.activated.connect(func_for_send_serial_msg)
     dialog_port.pushButton.clicked.connect(func_for_send_serial_msg)
     dialog_port.pushButton_2.clicked.connect(dialog_port.recv_Text.clear)
     dialog_port.end_select.currentIndexChanged.connect(func_for_select_end_char)

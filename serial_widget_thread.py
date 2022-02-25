@@ -46,11 +46,21 @@ class read_thr(threading.Thread):
                 if text:
                     temp += text
                     try:  # 解决汉字等二进制转换的问题
-                        text_ = temp.decode(encoding="utf-8")
+                        decode_str = temp.decode(encoding="utf-8")
+                        for k, i in enumerate(decode_str):
+                            if i in "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0e\x0f":
+                                decode_str = decode_str[:k] + "\\x" + temp[k:k+1].hex() + decode_str[k+1:]
+                        self.worker.sendChar(decode_str)
                         temp = b""
-                        self.worker.sendChar(text_)
-                    except:
-                        pass
+                    except BaseException as e:
+                        if len(temp) > 5:
+                            # self.worker.sendChar(temp.decode(encoding="utf-8", errors="replace"))
+                            decode_str = ""
+                            for i in temp:
+                                decode_str += "\\x" + temp.hex()
+                            self.worker.sendChar(decode_str)
+                            
+                            temp = b""
                     self.jump_to_last_line()               
             time.sleep(0.001)
         print("串口打印线程被终止")

@@ -8,7 +8,7 @@
     "gear_level": 4,
     "last_joy": 0,
     "last_port": 1,
-    "skin_mode": "classic",
+    "skin_mode": "MaterialDark",
     "temp_joys_list": [],
     "temp_ports_list": [
         "USB-SERIAL CH340K (COM13)"

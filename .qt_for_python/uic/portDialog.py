@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 ################################################################################
 ## Form generated from reading UI file 'portDialog.ui'
 ##
@@ -6,6 +7,7 @@
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
+
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
     QSize, QTime, QUrl, Qt)
@@ -76,6 +78,9 @@ class Ui_Dialog(object):
         self.AutoLast.setText(QCoreApplication.translate("Dialog", u"\u81ea\u52a8\u8f6c\u5230\u884c\u5c3e", None))
         self.label.setText(QCoreApplication.translate("Dialog", u"\u7ed3\u675f\u7b26", None))
         self.pushButton_2.setText(QCoreApplication.translate("Dialog", u"\u6e05\u7a7a", None))
+#if QT_CONFIG(shortcut)
+        self.pushButton_2.setShortcut(QCoreApplication.translate("Dialog", u"Del", None))
+#endif // QT_CONFIG(shortcut)
         self.recv_Text.setHtml(QCoreApplication.translate("Dialog", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"

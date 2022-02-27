@@ -58,6 +58,7 @@ global_options = {
     "end_char"       : 0,
     "skin_mode"      : "classic",
     "gear_level"     : 0,
+    "step_levels"    : [0, 0, 0],
     "disable_states" : [True, True, True],
 }
 

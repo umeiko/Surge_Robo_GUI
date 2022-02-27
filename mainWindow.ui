@@ -26,7 +26,7 @@
    <string>手术机器人专家</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources/resources.qrc">
+   <iconset>
     <normaloff>:/main_icon.png</normaloff>:/main_icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -496,7 +496,7 @@ border-image: url(:/up.png);</string>
      <string>点此禁止导管运动</string>
     </property>
     <property name="icon">
-     <iconset resource="resources/resources.qrc">
+     <iconset>
       <normaloff>:/disable.png</normaloff>:/disable.png</iconset>
     </property>
    </widget>
@@ -513,7 +513,7 @@ border-image: url(:/up.png);</string>
      <string>点此禁止导丝递送</string>
     </property>
     <property name="icon">
-     <iconset resource="resources/resources.qrc">
+     <iconset>
       <normaloff>:/disable.png</normaloff>:/disable.png</iconset>
     </property>
    </widget>
@@ -530,7 +530,7 @@ border-image: url(:/up.png);</string>
      <string>点此禁止导丝旋转</string>
     </property>
     <property name="icon">
-     <iconset resource="resources/resources.qrc">
+     <iconset>
       <normaloff>:/disable.png</normaloff>:/disable.png</iconset>
     </property>
    </widget>
@@ -553,7 +553,7 @@ border-image: url(:/up.png);</string>
      <string>机器急停</string>
     </property>
     <property name="icon">
-     <iconset resource="resources/resources.qrc">
+     <iconset>
       <normaloff>:/stop.png</normaloff>:/stop.png</iconset>
     </property>
     <property name="iconSize">

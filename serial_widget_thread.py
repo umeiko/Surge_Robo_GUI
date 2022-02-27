@@ -6,7 +6,8 @@ from PySide6.QtGui import QTextCursor
 class jump_worker(QObject):
     jump_sig  = Signal(QTextCursor)
     send_char_sig = Signal(str)
-    erro_sig = Signal()
+    erro_sig  = Signal()
+    speed_sig = Signal(float, float, float)
     def sendCursor(self, Cursor):
         self.jump_sig.emit(Cursor)
     def sendChar(self, char):
@@ -54,7 +55,6 @@ class read_thr(threading.Thread):
                         temp = b""
                     except BaseException as e:
                         if len(temp) > 5:
-                            # self.worker.sendChar(temp.decode(encoding="utf-8", errors="replace"))
                             decode_str = ""
                             for i in temp:
                                 decode_str += "\\x" + temp.hex()
@@ -64,3 +64,15 @@ class read_thr(threading.Thread):
                     self.jump_to_last_line()               
             time.sleep(0.001)
         print("串口打印线程被终止")
+
+
+class msg_fresh_thr(threading.Thread):
+    def __init__(self, robot):
+        threading.Thread.__init__(self)
+        self.ser = robot.ser
+        self.worker = jump_worker()
+        self.is_running = True
+    
+    def run(self):
+        while self.is_running:
+            pass

@@ -90,5 +90,5 @@ class Ui_Dialog(object):
         self.end_select.setItemText(2, QCoreApplication.translate("Dialog", u"\u56de\u8f66 (\\r)", None))
         self.end_select.setItemText(3, QCoreApplication.translate("Dialog", u"CR NL(\\r\\n)", None))
 
-    # retranslateUi
+# retranslateUi
 

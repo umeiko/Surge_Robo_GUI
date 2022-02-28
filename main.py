@@ -58,11 +58,13 @@ global_options = {
     "end_char"       : 0,
     "skin_mode"      : "classic",
     "gear_level"     : 0,
+    "step_levels"    : [0, 0, 0],
     "disable_states" : [True, True, True],
 }
 
 
 def fresh_ports():
+    main_window.com_select.setItemText(0, "断开连接")
     ports, names = SurgRobot.scan_ports()    
     for k, i in enumerate(global_options["temp_ports_list"]):
         if i not in names:
@@ -245,6 +247,7 @@ def disable_swicher(button_id, state=None):
 def func_for_serial_erro(*args):
     """串口异常处理的函数"""
     SurgRobot.ser.close()
+    main_window.com_select.setItemText(0, "连接失败, 请重试")
     main_window.com_select.setCurrentIndex(0)
     diaPortAPP.close()
 
@@ -262,6 +265,13 @@ def bind_methods():
     # gear_level_slider
     main_window.gear_level_slider.setPageStep(1)
     main_window.gear_level_slider.valueChanged.connect(func_for_gearlevel_change)
+    # step_slider
+    main_window.cath_step_slider.valueChanged.connect(
+        lambda x:main_window.cath_step_text.setText(f"{(0.5+0.01515152*x):.2f}mm"))
+    main_window.wire_step_slider.valueChanged.connect(
+        lambda x:main_window.wire_step_text.setText(f"{(0.5+0.01515152*x):.2f}mm"))
+    main_window.wireRot_step_slider.valueChanged.connect(
+        lambda x:main_window.wireRot_step_text.setText(f"{(5+0.40404*x):.2f}°"))
     # menu
     main_window.menu_joySet.triggered.connect(diaJoyAPP.exec)
     main_window.menu_Port.triggered.connect(diaPortAPP.exec)

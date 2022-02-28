@@ -6,9 +6,14 @@
     ],
     "end_char": 3,
     "gear_level": 4,
-    "last_joy": 1,
+    "last_joy": 0,
     "last_port": 0,
     "skin_mode": "MaterialDark",
+    "step_levels": [
+        0,
+        0,
+        0
+    ],
     "temp_joys_list": [
         "PS4 Controller"
     ],

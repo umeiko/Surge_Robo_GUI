@@ -90,7 +90,10 @@ class Robot(QObject):
             self.ser.close()
         self.ser.port = port
         if not self.ser.isOpen():
-            self.ser.open()
+            try:
+                self.ser.open()
+            except:
+                self.port_erro_signal.emit()
     
     def close_robot_port(self):
         """关闭机器人串口"""

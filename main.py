@@ -267,9 +267,11 @@ def bind_methods():
     # com_select
     main_window.com_select.mousePressEvent = func_for_show_ports
     main_window.com_select.currentIndexChanged.connect(func_for_select_port) 
+    main_window.com_select.wheelEvent=lambda *args: None
     # joystick_select
     main_window.joystick_select.mousePressEvent = func_for_show_joysticks
-    main_window.joystick_select.currentIndexChanged.connect(func_for_select_joystick)     
+    main_window.joystick_select.currentIndexChanged.connect(func_for_select_joystick)
+    main_window.joystick_select.wheelEvent=lambda *args: None  
     # gear_level_slider
     main_window.gear_level_slider.setPageStep(1)
     main_window.gear_level_slider.valueChanged.connect(func_for_gearlevel_change)

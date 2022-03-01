@@ -17,5 +17,7 @@
     "temp_joys_list": [
         "PS4 Controller"
     ],
-    "temp_ports_list": []
+    "temp_ports_list": [
+        "USB-SERIAL CH340 (COM3)"
+    ]
 }

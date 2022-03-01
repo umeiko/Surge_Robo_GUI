@@ -251,6 +251,14 @@ def func_for_serial_erro(*args):
     main_window.com_select.setCurrentIndex(0)
     diaPortAPP.close()
 
+def func_for_insert_port_text(*args):
+    """将文本插入到串口信息显示器中"""
+    text, is_html = args
+    if is_html:
+        cursor.insertHtml(text)
+    else:
+        cursor.insertText(text)
+
 def bind_methods():
     """为各个小部件绑定事件"""
     global thread_listen
@@ -286,7 +294,8 @@ def bind_methods():
     dialog_port.end_select.currentIndexChanged.connect(func_for_select_end_char)
     dialog_port.AutoLast.clicked.connect(thread_listen.jump_to_last_line)
     thread_listen.worker.jump_sig.connect(dialog_port.recv_Text.setTextCursor)
-    thread_listen.worker.send_char_sig.connect(cursor.insertText)
+    thread_listen.worker.send_char_sig.connect(func_for_insert_port_text)
+    # thread_listen.worker.send_char_sig.connect(cursor.insertHtml)
     thread_listen.worker.erro_sig.connect(func_for_serial_erro)
     diaPortAPP.showEvent = func_for_open_serial_dialog
     diaPortAPP.closeEvent = func_for_close_serial_dialog

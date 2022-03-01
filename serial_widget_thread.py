@@ -5,13 +5,13 @@ from PySide6.QtGui import QTextCursor
 
 class jump_worker(QObject):
     jump_sig  = Signal(QTextCursor)
-    send_char_sig = Signal(str)
+    send_char_sig = Signal(str, bool)
     erro_sig  = Signal()
     speed_sig = Signal(float, float, float)
     def sendCursor(self, Cursor):
         self.jump_sig.emit(Cursor)
-    def sendChar(self, char):
-        self.send_char_sig.emit(char)
+    def sendChar(self, char, mode):
+        self.send_char_sig.emit(char, mode)
 
 
 class read_thr(threading.Thread):
@@ -51,15 +51,14 @@ class read_thr(threading.Thread):
                         for k, i in enumerate(decode_str):
                             if i in "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0e\x0f":
                                 decode_str = decode_str[:k] + "\\x" + temp[k:k+1].hex() + decode_str[k+1:]
-                        self.worker.sendChar(decode_str)
+                        self.worker.sendChar(decode_str, False)
                         temp = b""
                     except BaseException as e:
                         if len(temp) > 5:
                             decode_str = ""
-                            for i in temp:
-                                decode_str += "\\x" + temp.hex()
-                            self.worker.sendChar(decode_str)
-                            
+                            for k, _ in enumerate(temp):
+                                decode_str += "\\x" + temp[k:k+1].hex()
+                            self.worker.sendChar(decode_str, False)
                             temp = b""
                     self.jump_to_last_line()               
             time.sleep(0.001)

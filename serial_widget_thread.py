@@ -44,6 +44,7 @@ class read_thr(threading.Thread):
                 except:
                     self.worker.erro_sig.emit()
                 self.robot.read_lock.release()
+                
                 if text:
                     temp += text
                     try:  # 解决汉字等二进制转换的问题
@@ -54,7 +55,15 @@ class read_thr(threading.Thread):
                         self.worker.sendChar(decode_str, False)
                         temp = b""
                     except BaseException as e:
-                        if len(temp) > 5:
+                        msg = str(e).split(":")[-1]
+                        if msg == " unexpected end of data":
+                            if len(temp) >3:
+                                decode_str = ""
+                                for k, _ in enumerate(temp):
+                                    decode_str += "\\x" + temp[k:k+1].hex()
+                                self.worker.sendChar(decode_str, False)
+                                temp = b""
+                        else:
                             decode_str = ""
                             for k, _ in enumerate(temp):
                                 decode_str += "\\x" + temp[k:k+1].hex()

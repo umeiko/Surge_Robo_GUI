@@ -4,23 +4,20 @@ from joystickDialog import Ui_Dialog as joystick_dialog
 from axisSetDialog import Ui_Dialog as axis_dialog
 import serial_widget_thread
 from robot_control import Robot
-from joystick_control import joystick_manager, flash_joyState_text, load_joy_options
+from joystick_control import joystick_manager, flash_joyState_text, load_joy_options, spd_map_func
 from robot_control import Robot
 from PySide6.QtGui import QIcon, QShortcut
 import sys
-from PySide6.QtCore import QTimer,QSize
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 
 
 
-main_window = Ui_MainWindow()  # 主界面
-
+main_window = Ui_MainWindow() # 主界面
 dialog_port = port_dialog()   # 串口调试助手
 dialog_joyconfig = joystick_dialog()  # 手柄设置窗口
-dialog_axis_add = axis_dialog()   # 手柄轴设置窗口
+dialog_axis_add = axis_dialog()       # 手柄轴设置窗口
 
-QueryTimer = QTimer()
-QueryTimer.setInterval(10)
 app = QApplication(sys.argv)
 w = QMainWindow()
 
@@ -36,16 +33,17 @@ main_window.speed_UI_list = [main_window.cath_speed_lcd,
                              main_window.wire_speed_lcd,
                              main_window.wire_rotSpeed_lcd]
 
-
-
 SurgRobot = Robot()
 JoyStick = joystick_manager(SurgRobot, main_window)
 thread_listen      = serial_widget_thread.read_thr(SurgRobot, dialog_port)
 thread_listen.name = "串口调试助手线程"
-thread_joylisten = flash_joyState_text()
+thread_joylisten   = flash_joyState_text()
 thread_joylisten.name = "手柄调试助手线程"
-cursor = dialog_port.recv_Text.textCursor()
+thread_StepAndSpeed   =  serial_widget_thread.msg_fresh_thr(SurgRobot)
+thread_StepAndSpeed.name = "速度回读与单步模式线程"
 
+
+cursor = dialog_port.recv_Text.textCursor()
 joy_config_flag  = True
 joy_config_index = -1
 fashion_flag = False
@@ -64,19 +62,31 @@ global_options = {
 
 
 def fresh_ports():
+    """刷新系统当前连接的串口设备"""
     main_window.com_select.setItemText(0, "断开连接")
-    ports, names = SurgRobot.scan_ports()    
-    for k, i in enumerate(global_options["temp_ports_list"]):
-        if i not in names:
-            main_window.com_select.removeItem(k+1)
+    ports, names = SurgRobot.scan_ports()
     
-    for k, i in zip(ports, names):
-        if i not in global_options["temp_ports_list"]:
-            main_window.com_select.addItem(i)    
-    global_options["temp_ports_list"] = names
+
+    for k, i in enumerate(global_options["temp_ports_list"]):
+        # 删除已不存在的端口
+        if i not in ports:
+            main_window.com_select.removeItem(k+1)
+            if global_options["temp_ports_list"]:
+                global_options["temp_ports_list"].pop(k)
+    
+    for k, i in enumerate(names):
+        # 添加新出现的端口
+        if ports[k] not in global_options["temp_ports_list"]:
+            main_window.com_select.addItem(i)
+            if global_options["temp_ports_list"]:
+                global_options["temp_ports_list"].append(ports[k])
+    
+    if not global_options["temp_ports_list"]:
+        global_options["temp_ports_list"] = ports
 
 
 def fresh_joystick():
+    '''刷新系统当前连接的手柄设备'''
     joys = JoyStick.scan_joystick()
     for k, i in enumerate(global_options["temp_joys_list"]):
         if i not in joys:
@@ -87,18 +97,16 @@ def fresh_joystick():
             main_window.joystick_select.addItem(i)
     global_options["temp_joys_list"] = joys
 
-
 def func_for_show_ports(*args):
     """展示串口的函数"""
     fresh_ports()
     main_window.com_select.showPopup()
 
-
 def func_for_select_port(*args):
     """选择连接到某个串口"""
     index = args[0]
     if index > 0:
-        SurgRobot.open_robot_port(SurgRobot.port_list[index-1]) 
+        SurgRobot.open_robot_port(global_options["temp_ports_list"][index-1])
     else:
         SurgRobot.close_robot_port()
     global_options["last_port"] = index
@@ -154,6 +162,7 @@ def func_for_open_joySet_dialog(*args):
         dialog_joy_setting_update(load_joy_options()["default"])
         dialog_joyconfig.joyStateShow.append("手柄未选择")
 
+
 def func_for_close_joySet_dialog(*args):
     """关闭手柄调试窗口时运行的函数"""
     global thread_joylisten
@@ -171,14 +180,14 @@ def func_for_open_serial_dialog(*args):
     global thread_listen
     SurgRobot.flush_ser()
     thread_listen.show = True
-    pass
+    thread_StepAndSpeed.pause = True
 
 
 def func_for_close_serial_dialog(*args):
     """关闭串口小部件时运行的函数"""
     global thread_listen
     thread_listen.show = False
-    pass
+    thread_StepAndSpeed.pause = False
 
 def func_for_select_end_char(*args):
     '''串口监视器选择结束符的函数'''
@@ -192,7 +201,17 @@ def func_for_print_args(*args):
 def func_for_lcd_speed(*args):
     """刷新速度显示窗口"""
     motoId, spd = args
-    main_window.speed_UI_list[motoId].display(int(spd))
+    main_window.speed_UI_list[motoId].display(spd)
+
+def func_for_lcd_pos(*args):
+    """刷新位置显示窗口"""
+    x, y, z = args
+    if x is not None:
+        main_window.cath_pos_speed_lcd.display(x)
+    if y is not None:
+        main_window.wire_pos_lcd.display(y)
+    if z is not None:
+        main_window.wire_rotPos_lcd.display(z)
 
 def dialog_joy_setting_update(dict):
     """传入手柄配置字典，刷新手柄设置菜单中的当前配置"""
@@ -246,6 +265,7 @@ def disable_swicher(button_id, state=None):
 
 def func_for_serial_erro(*args):
     """串口异常处理的函数"""
+    print(args[0])
     SurgRobot.ser.close()
     main_window.com_select.setItemText(0, "连接失败, 请重试")
     main_window.com_select.setCurrentIndex(0)
@@ -259,22 +279,48 @@ def func_for_insert_port_text(*args):
     else:
         cursor.insertText(text)
 
+def func_add_step_mission(id, time=1):
+    """添加单步前进任务"""
+    if id == 0:
+        value = main_window.cath_step_slider.value()
+        k, b = spd_map_func((0, 100), (0.5, 2))    
+    elif id == 1:
+        value = main_window.wire_step_slider.value()
+        k, b = spd_map_func((0, 100), (0.5, 2))
+    elif id == 2:
+        value = main_window.wireRot_step_slider.value()
+        k, b = spd_map_func((0, 100), (5, 45))
+    value = k * value + b
+    thread_StepAndSpeed.addStep(id, value, time)
+
+def func_for_emergency_stop(*args):
+    """急停开关执行的指令"""
+    SurgRobot.all_stop()
+    thread_StepAndSpeed.clearMissons()
+
 def bind_methods():
     """为各个小部件绑定事件"""
     global thread_listen
     SurgRobot.spd_signal.connect(func_for_lcd_speed)
     SurgRobot.port_erro_signal.connect(func_for_serial_erro)
+    
+    # thread_StepAndSpeed
+    thread_StepAndSpeed.worker.speed_sig.connect(func_for_lcd_pos)
+    
     # com_select
     main_window.com_select.mousePressEvent = func_for_show_ports
     main_window.com_select.currentIndexChanged.connect(func_for_select_port) 
     main_window.com_select.wheelEvent=lambda *args: None
+    
     # joystick_select
     main_window.joystick_select.mousePressEvent = func_for_show_joysticks
     main_window.joystick_select.currentIndexChanged.connect(func_for_select_joystick)
     main_window.joystick_select.wheelEvent=lambda *args: None  
+    
     # gear_level_slider
     main_window.gear_level_slider.setPageStep(1)
     main_window.gear_level_slider.valueChanged.connect(func_for_gearlevel_change)
+    
     # step_slider
     main_window.cath_step_slider.valueChanged.connect(
         lambda x:main_window.cath_step_text.setText(f"{(0.5+0.01515152*x):.2f}mm"))
@@ -282,11 +328,13 @@ def bind_methods():
         lambda x:main_window.wire_step_text.setText(f"{(0.5+0.01515152*x):.2f}mm"))
     main_window.wireRot_step_slider.valueChanged.connect(
         lambda x:main_window.wireRot_step_text.setText(f"{(5+0.40404*x):.2f}°"))
+    
     # menu
     main_window.menu_joySet.triggered.connect(diaJoyAPP.exec)
     main_window.menu_Port.triggered.connect(diaPortAPP.exec)
     main_window.style_dark.triggered.connect(change_style_dark)
     main_window.style_classic.triggered.connect(change_style_classic)
+    
     # dialog_port
     shortcut = QShortcut(diaPortAPP)
     shortcut.setKey(u'Return')
@@ -297,10 +345,10 @@ def bind_methods():
     dialog_port.AutoLast.clicked.connect(thread_listen.jump_to_last_line)
     thread_listen.worker.jump_sig.connect(dialog_port.recv_Text.setTextCursor)
     thread_listen.worker.send_char_sig.connect(func_for_insert_port_text)
-    # thread_listen.worker.send_char_sig.connect(cursor.insertHtml)
     thread_listen.worker.erro_sig.connect(func_for_serial_erro)
     diaPortAPP.showEvent = func_for_open_serial_dialog
     diaPortAPP.closeEvent = func_for_close_serial_dialog
+    
     # dialog_joy
     dialog_joyconfig.addSettingButton.clicked.connect(axisAPP.exec)
     thread_joylisten.signal_boject.text_sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
@@ -312,9 +360,10 @@ def bind_methods():
     # dialog_axis_add
     dialog_axis_add.buttonBox.accepted.connect(save_joyset)
 
-    # buttons: steps
-    main_window.all_stop_button.clicked.connect(SurgRobot.all_stop) 
-    main_window.cath_up_button.clicked.connect(save_options)
+    # buttons: steps and all_stop
+    main_window.all_stop_button.clicked.connect(func_for_emergency_stop) 
+    main_window.cath_up_button.clicked.connect(lambda: func_add_step_mission(0))
+
     # buttons: disable_state
     main_window.cath_disable_button.clicked.connect(lambda: disable_swicher(0))
     main_window.wire_disable_button.clicked.connect(lambda: disable_swicher(1))
@@ -326,6 +375,7 @@ def close_methods(*args):
     save_options()
     thread_listen.isRunning = False
     thread_joylisten.isRunning = False
+    thread_StepAndSpeed.isRunning = False
     SurgRobot.close_robot_port()
     JoyStick.close_joystick()
 
@@ -336,6 +386,7 @@ def init_methods(*args):
     load_options()
     open_serial_thread()
     open_joy_thread()
+    thread_StepAndSpeed.start()
 
 
 def change_style_classic():
@@ -385,7 +436,7 @@ def change_style_dark():
                 button.setIcon(button_icon_accept)
 
 def save_joyset(*args):
-    """保存手柄设置运行的函数"""
+    """保存手柄设置"""
     global joy_config_index
     global joy_config_flag
     import json
@@ -420,7 +471,7 @@ def save_joyset(*args):
     dialog_joy_setting_update(load_joy_options()["default"])
 
 def change_joyset(*args):
-    """保存手柄设置运行的函数"""
+    """读取手柄设置函数"""
     import json
     with open("joy_config.json", 'r') as js_file:
       temp_robo_options = json.load(js_file)
@@ -438,14 +489,14 @@ def change_joyset(*args):
     axisAPP.exec()  
 
 def save_options():
-    """导出配置到文件中"""
+    """导出主窗口的配置到文件中"""
     import json as json
     with open("main_config.json", 'w') as js_file:
         js_string = json.dumps(global_options, sort_keys=True, indent=4, separators=(',', ': '))
         js_file.write(js_string)
 
 def load_options():
-    """从文件中加载配置"""
+    """从文件中加载主窗口配置"""
     import json as json
     with open("main_config.json", 'r') as js_file:
         temp_robo_options = json.load(js_file)
@@ -474,7 +525,6 @@ def load_options():
     
     for button_id, state in enumerate(temp_robo_options["disable_states"]):
         disable_swicher(button_id, state)
-
 
 
 def read_qss_file(qss_file_name):

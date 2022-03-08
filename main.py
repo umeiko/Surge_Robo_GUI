@@ -265,7 +265,7 @@ def disable_swicher(button_id, state=None):
 
 def func_for_serial_erro(*args):
     """串口异常处理的函数"""
-    print(args[0])
+    print(args)
     SurgRobot.ser.close()
     main_window.com_select.setItemText(0, "连接失败, 请重试")
     main_window.com_select.setCurrentIndex(0)

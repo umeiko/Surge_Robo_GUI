@@ -201,17 +201,17 @@ def func_for_print_args(*args):
 def func_for_lcd_speed(*args):
     """刷新速度显示窗口"""
     motoId, spd = args
-    main_window.speed_UI_list[motoId].display(spd)
+    main_window.speed_UI_list[motoId].display(round(spd,3))
 
 def func_for_lcd_pos(*args):
     """刷新位置显示窗口"""
     x, y, z = args
     if x is not None:
-        main_window.cath_pos_speed_lcd.display(x)
+        main_window.cath_pos_speed_lcd.display(round(x, 3))
     if y is not None:
-        main_window.wire_pos_lcd.display(y)
+        main_window.wire_pos_lcd.display(round(y, 3))
     if z is not None:
-        main_window.wire_rotPos_lcd.display(z)
+        main_window.wire_rotPos_lcd.display(round(z, 3))
 
 def dialog_joy_setting_update(dict):
     """传入手柄配置字典，刷新手柄设置菜单中的当前配置"""
@@ -279,18 +279,18 @@ def func_for_insert_port_text(*args):
     else:
         cursor.insertText(text)
 
-def func_add_step_mission(id, time=1):
+def func_add_step_mission(id, dir=1, time=1):
     """添加单步前进任务"""
     if id == 0:
         value = main_window.cath_step_slider.value()
-        k, b = spd_map_func((0, 100), (0.5, 2))    
+        k, b = spd_map_func((0, 99), (0.5, 2))    
     elif id == 1:
         value = main_window.wire_step_slider.value()
-        k, b = spd_map_func((0, 100), (0.5, 2))
+        k, b = spd_map_func((0, 99), (0.5, 2))
     elif id == 2:
         value = main_window.wireRot_step_slider.value()
-        k, b = spd_map_func((0, 100), (5, 45))
-    value = k * value + b
+        k, b = spd_map_func((0, 99), (5, 45))
+    value = dir * (k * value + b)
     thread_StepAndSpeed.addStep(id, value, time)
 
 def func_for_emergency_stop(*args):
@@ -363,6 +363,11 @@ def bind_methods():
     # buttons: steps and all_stop
     main_window.all_stop_button.clicked.connect(func_for_emergency_stop) 
     main_window.cath_up_button.clicked.connect(lambda: func_add_step_mission(0))
+    main_window.cath_down_button.clicked.connect(lambda: func_add_step_mission(0, -1))
+    main_window.wire_up_button.clicked.connect(lambda: func_add_step_mission(1))
+    main_window.wire_down_button.clicked.connect(lambda: func_add_step_mission(1, -1))
+    main_window.wire_clock_button.clicked.connect(lambda: func_add_step_mission(2))
+    main_window.wire_antiClock_button.clicked.connect(lambda: func_add_step_mission(2, -1))
 
     # buttons: disable_state
     main_window.cath_disable_button.clicked.connect(lambda: disable_swicher(0))

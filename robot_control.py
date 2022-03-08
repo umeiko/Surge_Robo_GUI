@@ -6,7 +6,7 @@ from PySide6.QtCore import Signal, QObject
 
 
 class Robot(QObject):
-    spd_signal = Signal(int, int)  # id, spd
+    spd_signal = Signal(int, float)  # id, spd
     port_erro_signal = Signal(str)
     def __init__(self,COM_num=None):
         super(Robot, self).__init__()
@@ -71,11 +71,13 @@ class Robot(QObject):
         else:
             print(msg)
     
-    def set_speed(self, id, spd):
+    def set_speed(self, id, spd, is_geared=True):
         """设置某一轴的速度"""
-        spd = self.gear_level * spd
+        if is_geared:
+            spd = self.gear_level * spd
         self.spd_signal.emit(id, spd)
         self.set_speed_freq(id, spd)
+
     
     def scan_ports(self):
         """查询有哪些串口可用，返回一个列表"""
@@ -146,6 +148,7 @@ class Robot(QObject):
         """停止所有的电机运动"""
         for i in range(3):
             self.set_speed_freq(i,0)
+            self.spd_signal.emit(i, 0)
     
     def flush_ser(self):
         """清除串口缓冲区的内容"""

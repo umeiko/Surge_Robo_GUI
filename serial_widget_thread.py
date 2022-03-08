@@ -101,7 +101,7 @@ class msg_fresh_thr(threading.Thread):
 
     async def runStep(self, id, spd, delay_time):
         '''一个执行机器人单步运动的异步函数'''
-        self.robot.set_speed(id, spd)
+        self.robot.set_speed(id, spd, False)
         await asyncio.sleep(delay_time)
         self.robot.set_speed(id, 0)
     
@@ -113,12 +113,15 @@ class msg_fresh_thr(threading.Thread):
     async def loopStepRunner(self, id):
         '''异步循环检查是否有需要运行的【单步指令队列】'''
         while self.isRunning:
+            self.lock.acquire()
             if self.stepsQueues[id] and not self.pause:
-                await self.runStep(id, *self.stepsQueues[id][0])
-                self.lock.acquire()
+                args = id, *self.stepsQueues[id][0]
                 self.stepsQueues[id].pop(0)
                 self.lock.release()
-            await asyncio.sleep(0.001)
+                await self.runStep(*args)
+            else:
+                self.lock.release()
+                await asyncio.sleep(0.001)
     
     async def loopGetMsgRunner(self, freq=2):
         '''异步循环地获取并刷新界面'''

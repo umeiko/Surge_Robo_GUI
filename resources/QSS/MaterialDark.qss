@@ -35,7 +35,7 @@ QPushButton{
 	border-top-color: transparent;
 	border-right-color: transparent;
 	border-left-color: transparent;
-	border-bottom-color: transparent;
+	border-bottom-color: #a9b7c6;
 	border-width: 1px;
 	border-style: solid;
 	color: #a9b7c6;
@@ -338,6 +338,9 @@ QFontComboBox {
 	color: #a9b7c6;	
 	background-color: #1e1d23;
 }
+QGroupBox{
+    color: #a9b7c6;
+}
 QToolBox {
 	color: #a9b7c6;
 	background-color: #1e1d23;
@@ -380,11 +383,11 @@ QSlider::add-page:horizontal {
     background: white;
 }
 QSlider::add-page:vertical {
-    background: white;
+    background: #04b97f;
 }
 QSlider::sub-page:horizontal {
     background: #04b97f;
 }
 QSlider::sub-page:vertical {
-    background: #04b97f;
+    background: white;
 }

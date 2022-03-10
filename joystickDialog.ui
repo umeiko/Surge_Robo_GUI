@@ -57,13 +57,6 @@
      </item>
     </widget>
    </item>
-   <item row="2" column="2" colspan="2">
-    <widget class="QPushButton" name="addSettingButton">
-     <property name="text">
-      <string>添加设置</string>
-     </property>
-    </widget>
-   </item>
    <item row="3" column="1" colspan="2">
     <widget class="QPushButton" name="saveButton">
      <property name="text">
@@ -75,6 +68,20 @@
     <widget class="QPushButton" name="cancelButton">
      <property name="text">
       <string>取消</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="3">
+    <widget class="QPushButton" name="addSettingButton">
+     <property name="text">
+      <string>添加轴</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QPushButton" name="addButtonSettingButton">
+     <property name="text">
+      <string>添加按键</string>
      </property>
     </widget>
    </item>

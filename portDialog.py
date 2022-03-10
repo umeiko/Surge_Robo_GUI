@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-
 ################################################################################
 ## Form generated from reading UI file 'portDialog.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.2
+## Created by: Qt User Interface Compiler version 6.2.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
-
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
     QSize, QTime, QUrl, Qt)
@@ -85,12 +83,12 @@ class Ui_Dialog(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", None))
         self.pushButton.setText(QCoreApplication.translate("Dialog", u"\u53d1\u9001", None))
 #if QT_CONFIG(shortcut)
-        self.pushButton.setShortcut(QCoreApplication.translate("Dialog", u"Return", None))
+        self.pushButton.setShortcut(QCoreApplication.translate("Dialog", u"Enter", None))
 #endif // QT_CONFIG(shortcut)
         self.end_select.setItemText(0, QCoreApplication.translate("Dialog", u"\u65e0", None))
         self.end_select.setItemText(1, QCoreApplication.translate("Dialog", u"\u6362\u884c (\\n)", None))
         self.end_select.setItemText(2, QCoreApplication.translate("Dialog", u"\u56de\u8f66 (\\r)", None))
         self.end_select.setItemText(3, QCoreApplication.translate("Dialog", u"CR NL(\\r\\n)", None))
 
-    # retranslateUi
+# retranslateUi
 

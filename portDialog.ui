@@ -39,6 +39,9 @@
      <property name="text">
       <string>清空</string>
      </property>
+     <property name="shortcut">
+      <string>Del</string>
+     </property>
     </widget>
    </item>
    <item row="1" column="0" colspan="5">
@@ -61,7 +64,7 @@ p, li { white-space: pre-wrap; }
       <string>发送</string>
      </property>
      <property name="shortcut">
-      <string>Return</string>
+      <string>Enter</string>
      </property>
     </widget>
    </item>

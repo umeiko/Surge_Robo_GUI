@@ -361,6 +361,7 @@ def bind_methods():
     dialog_joyconfig.addSettingButton.clicked.connect(axisAPP.exec)
     thread_joylisten.signal_boject.text_sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
     thread_joylisten.signal_boject.dic_sender.connect(dialog_joy_setting_update)
+    
     diaJoyAPP.accepted.connect(func_for_close_joySet_dialog)
     diaJoyAPP.rejected.connect(func_for_close_joySet_dialog)
     dialog_joyconfig.nowSettingShow.itemDoubleClicked.connect(change_joyset)

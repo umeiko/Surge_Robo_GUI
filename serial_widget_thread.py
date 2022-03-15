@@ -1,4 +1,5 @@
 import time
+from collections import deque
 import threading
 import asyncio
 from PySide6.QtCore import Signal, QObject
@@ -85,7 +86,7 @@ class msg_fresh_thr(threading.Thread):
         self.worker = jump_worker()
         self.isRunning = True
         self.lock = threading.Lock()
-        self.stepsQueues = [[],[],[]]
+        self.stepsQueues = [deque(),deque(),deque()]
         self.freshText = False
         self.pause = False
         self.portDialog = portDialog
@@ -120,7 +121,7 @@ class msg_fresh_thr(threading.Thread):
             self.lock.acquire()
             if self.stepsQueues[id] and not self.pause:
                 args = id, *self.stepsQueues[id][0]
-                self.stepsQueues[id].pop(0)
+                self.stepsQueues[id].popleft()
                 self.lock.release()
                 await self.runStep(*args)
             else:

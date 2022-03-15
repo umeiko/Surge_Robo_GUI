@@ -78,14 +78,18 @@ class read_thr(threading.Thread):
 
 class msg_fresh_thr(threading.Thread):
     '''该线程通过异步的方式同时处理【获取位置信息】和【执行单步运行】'''
-    def __init__(self, robot):
+    def __init__(self, robot, portDialog):
         threading.Thread.__init__(self)
         self.robot = robot
+        self.ser = robot.ser
         self.worker = jump_worker()
         self.isRunning = True
         self.lock = threading.Lock()
         self.stepsQueues = [[],[],[]]
+        self.freshText = False
         self.pause = False
+        self.portDialog = portDialog
+        self.cursor = portDialog.recv_Text.textCursor()
         
     def addStep(self, id, spd, delay_time):
         '''添加一个【单步前进】任务，输入电机号，单步速度与单步时间'''
@@ -131,6 +135,54 @@ class msg_fresh_thr(threading.Thread):
                 self.worker.speed_sig.emit(x, y, z)
             await asyncio.sleep(1/freq)
 
+    def jump_to_last_line(self):
+        '''串口文字接收助手: 自动跳到行尾'''
+        if self.portDialog.AutoLast.isChecked():
+            try:
+                self.worker.sendCursor(self.cursor)
+            except:
+                pass
+
+    async def loopReadSerial(self):
+        '''异步的串口文字接收助手'''
+        temp = b""
+        while self.isRunning:
+            if self.ser.isOpen() and self.freshText:
+                self.robot.read_lock.acquire()
+                try:
+                    text = self.ser.read()
+                except:
+                    self.worker.erro_sig.emit()
+                self.robot.read_lock.release()
+                
+                if text:
+                    temp += text
+                    try:  # 解决汉字等二进制转换的问题
+                        decode_str = temp.decode(encoding="utf-8")
+                        for k, i in enumerate(decode_str):
+                            if i in "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0e\x0f":
+                                decode_str = decode_str[:k] + "\\x" + temp[k:k+1].hex() + decode_str[k+1:]
+                        self.worker.sendChar(decode_str, False)
+                        temp = b""
+                    except BaseException as e:
+                        msg = str(e).split(":")[-1]
+                        if msg == " unexpected end of data":
+                            if len(temp) >3:
+                                decode_str = ""
+                                for k, _ in enumerate(temp):
+                                    decode_str += "\\x" + temp[k:k+1].hex()
+                                self.worker.sendChar(decode_str, False)
+                                temp = b""
+                        else:
+                            decode_str = ""
+                            for k, _ in enumerate(temp):
+                                decode_str += "\\x" + temp[k:k+1].hex()
+                            self.worker.sendChar(decode_str, False)
+                            temp = b""
+                    self.jump_to_last_line()               
+            await asyncio.sleep(0.001)
+
+
     async def mainLoop(self):
         '''异步应用的入口'''
         await asyncio.gather(
@@ -138,6 +190,7 @@ class msg_fresh_thr(threading.Thread):
             self.loopStepRunner(0),
             self.loopStepRunner(1),
             self.loopStepRunner(2),
+            self.loopReadSerial(),
             )
         
     def run(self):

@@ -1,11 +1,11 @@
 {
     "disable_states": [
-        true,
-        true,
+        false,
+        false,
         true
     ],
     "end_char": 3,
-    "gear_level": 2,
+    "gear_level": 3,
     "last_joy": 1,
     "last_port": 1,
     "skin_mode": "MaterialDark",

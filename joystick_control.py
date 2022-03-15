@@ -234,7 +234,6 @@ class flash_joyState_text(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.joy = None
-        # self.joy = joystick.Joystick(id)
         self.isRunning = False
         self.signal_boject = Signal_Worker()
         self.lock = threading.Lock()
@@ -276,12 +275,10 @@ class flash_joyState_text(threading.Thread):
         try:
             jid = self.joy.get_instance_id()
         except AttributeError:
-            # get_instance_id() is an SDL2 method
             jid = self.joy.get_id()
         state_str += "{}Joystick {}\n".format(indent_str, jid)
         indent_str += "  "
 
-        # Get the name from the OS for the controller/self.joy.
         name = self.joy.get_name()
         state_str += "{}Joystick name: {}\n".format(indent_str, name)
 
@@ -293,8 +290,6 @@ class flash_joyState_text(threading.Thread):
         else:
             state_str += "{}GUID: {}\n".format(indent_str, guid)
 
-        # Usually axis run in pairs, up/down for one, and left/right for
-        # the other.
         axes = self.joy.get_numaxes()
         state_str += "{}Number of axes: {}\n".format(indent_str, axes)
         indent_str += "  "
@@ -318,8 +313,6 @@ class flash_joyState_text(threading.Thread):
         state_str += "{}Number of hats: {}\n".format(indent_str, hats)
         indent_str += "  "
 
-        # Hat position. All or nothing for direction, not a float like
-        # get_axis(). Position is a tuple of int values (x, y).
         for i in range(hats):
             hat = self.joy.get_hat(i)
             state_str += "{}Hat {} value: {}\n".format(indent_str, i, str(hat))

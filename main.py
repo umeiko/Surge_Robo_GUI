@@ -237,10 +237,13 @@ def disable_swicher(button_id, state=None):
     style_str = ""
     if button_id == 0:
         button = main_window.cath_disable_button
+        SurgRobot.flags[0] = not SurgRobot.flags[0]
     elif button_id == 1:
         button = main_window.wire_disable_button
+        SurgRobot.flags[1] = not SurgRobot.flags[1]
     elif button_id == 2:
         button = main_window.wire_rot_disable_button
+        SurgRobot.flags[2] = not SurgRobot.flags[2]
     if global_options["skin_mode"] == "classic":
         style_str = ""
     elif global_options["skin_mode"] == "MaterialDark":

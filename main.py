@@ -10,7 +10,7 @@ from PySide6.QtGui import QIcon, QShortcut
 import sys
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
-
+import numpy as np
 
 
 main_window = Ui_MainWindow() # 主界面
@@ -201,7 +201,12 @@ def func_for_print_args(*args):
 def func_for_lcd_speed(*args):
     """刷新速度显示窗口"""
     motoId, spd = args
-    main_window.speed_UI_list[motoId].display(round(spd,3))
+    if motoId == 0:
+      main_window.speed_UI_list[0].display(round(spd/640,3))
+    if motoId == 1:
+        main_window.speed_UI_list[1].display(round(spd*np.pi/45,3))
+    if motoId == 2:
+      main_window.speed_UI_list[2].display(round(spd,3)) 
 
 def func_for_lcd_pos(*args):
     """刷新位置显示窗口"""

@@ -16,7 +16,7 @@ class Robot(QObject):
         self.ser.baudrate = 115200
         self.ser.timeout = 0.005
         self.gear_level  = 0.2
-        self.flags = [False, False, False]
+        self.flags = [False, False, False] #禁止标志位
         if COM_num is not None:
             self.ser.port = COM_num
             self.ser.open()

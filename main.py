@@ -11,6 +11,7 @@ import sys
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 import numpy as np
+##
 
 
 main_window = Ui_MainWindow() # 主界面

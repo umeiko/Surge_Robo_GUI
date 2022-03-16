@@ -16,6 +16,7 @@ class Robot(QObject):
         self.ser.baudrate = 115200
         self.ser.timeout = 0.005
         self.gear_level  = 0.2
+        self.flags = [True, True, True]
         if COM_num is not None:
             self.ser.port = COM_num
             self.ser.open()
@@ -73,10 +74,15 @@ class Robot(QObject):
     
     def set_speed(self, id, spd, is_geared=True):
         """设置某一轴的速度"""
+        
         if is_geared:
             spd = self.gear_level * spd
-        self.spd_signal.emit(id, spd)
-        self.set_speed_freq(id, spd)
+        if self.flags[id]:    
+          self.spd_signal.emit(id, spd)
+          self.set_speed_freq(id, spd)
+        else:
+          self.spd_signal.emit(id, 0)  
+          self.set_speed_freq(id, 0)   
 
     
     def scan_ports(self):

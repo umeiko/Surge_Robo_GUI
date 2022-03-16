@@ -166,12 +166,6 @@ class thread_joystick(threading.Thread):
         '''通过轴号控制电机的速度'''
         
         axis_value = self.joy.get_axis(axis_id)
-        # if 0.05 > axis_value  > -0.05:
-        #     axis_value  = 0
-        # if -1. < axis_value  < -0.995:
-        #     axis_value  = -1
-        # if 1. > axis_value  > 0.995:
-        #     axis_value  = 1
         axis_value = axis_shift_cancelling(axis_value)
         
         speed = k*axis_value + b if axis_value != 0 else 0
@@ -215,7 +209,7 @@ class thread_joystick(threading.Thread):
         self.axes_ctrl_funcs.append(lambda: self.axis_speed_ctrl(axis_num, moto_id, k, b))
     
     def bond_double_axes_func(self, moto_id, axis_1, axis_2, spd_map_1=(-1, 1, 0, -3600), spd_map_2=(-1, 1, 0, 3600)):
-        """"""
+        """处理两个轴被绑定到同一个电机上的情况"""
         k1, b1 = spd_map_func_(spd_map_1)
         k2, b2 = spd_map_func_(spd_map_2)
         print(moto_id, axis_1, k1, b1, axis_2, k2, b2)
@@ -234,7 +228,6 @@ class flash_joyState_text(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.joy = None
-        # self.joy = joystick.Joystick(id)
         self.isRunning = False
         self.signal_boject = Signal_Worker()
         self.lock = threading.Lock()
@@ -271,17 +264,15 @@ class flash_joyState_text(threading.Thread):
     def get_state(self):
         state_str = ""
         indent_str = ""
-        for event in pygame.event.get():
+        for _ in pygame.event.get():
             pass
         try:
             jid = self.joy.get_instance_id()
         except AttributeError:
-            # get_instance_id() is an SDL2 method
             jid = self.joy.get_id()
         state_str += "{}Joystick {}\n".format(indent_str, jid)
         indent_str += "  "
 
-        # Get the name from the OS for the controller/self.joy.
         name = self.joy.get_name()
         state_str += "{}Joystick name: {}\n".format(indent_str, name)
 
@@ -293,8 +284,6 @@ class flash_joyState_text(threading.Thread):
         else:
             state_str += "{}GUID: {}\n".format(indent_str, guid)
 
-        # Usually axis run in pairs, up/down for one, and left/right for
-        # the other.
         axes = self.joy.get_numaxes()
         state_str += "{}Number of axes: {}\n".format(indent_str, axes)
         indent_str += "  "
@@ -318,8 +307,6 @@ class flash_joyState_text(threading.Thread):
         state_str += "{}Number of hats: {}\n".format(indent_str, hats)
         indent_str += "  "
 
-        # Hat position. All or nothing for direction, not a float like
-        # get_axis(). Position is a tuple of int values (x, y).
         for i in range(hats):
             hat = self.joy.get_hat(i)
             state_str += "{}Hat {} value: {}\n".format(indent_str, i, str(hat))

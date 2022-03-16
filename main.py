@@ -35,12 +35,12 @@ main_window.speed_UI_list = [main_window.cath_speed_lcd,
 
 SurgRobot = Robot()
 JoyStick = joystick_manager(SurgRobot, main_window)
-thread_listen      = serial_widget_thread.read_thr(SurgRobot, dialog_port)
-thread_listen.name = "串口调试助手线程"
+# thread_listen      = serial_widget_thread.read_thr(SurgRobot, dialog_port)
+# thread_listen.name = "串口调试助手线程"
 thread_joylisten   = flash_joyState_text()
 thread_joylisten.name = "手柄调试助手线程"
-thread_StepAndSpeed   =  serial_widget_thread.msg_fresh_thr(SurgRobot)
-thread_StepAndSpeed.name = "速度回读与单步模式线程"
+thread_StepAndSpeed   =  serial_widget_thread.msg_fresh_thr(SurgRobot, dialog_port)
+thread_StepAndSpeed.name = "串口异步处理线程"
 
 
 cursor = dialog_port.recv_Text.textCursor()
@@ -140,10 +140,10 @@ def func_for_send_serial_msg(*args):
     SurgRobot.write_ser(msg)
     dialog_port.send_Input.clear()
 
-def open_serial_thread():
-    """打开监听串口的后台线程"""
-    global thread_listen
-    thread_listen.start()
+# def open_serial_thread():
+#     """打开监听串口的后台线程"""
+#     global thread_listen
+#     thread_listen.start()
 
 def open_joy_thread():
     """打开监听手柄的后台线程"""
@@ -179,14 +179,16 @@ def func_for_open_serial_dialog(*args):
         dialog_port.recv_Text.append("串口未打开")
     global thread_listen
     SurgRobot.flush_ser()
-    thread_listen.show = True
+    thread_StepAndSpeed.freshText = True
+    # thread_listen.show = True
     thread_StepAndSpeed.pause = True
 
 
 def func_for_close_serial_dialog(*args):
     """关闭串口小部件时运行的函数"""
     global thread_listen
-    thread_listen.show = False
+    # thread_listen.show = False
+    thread_StepAndSpeed.freshText = False
     thread_StepAndSpeed.pause = False
 
 def func_for_select_end_char(*args):
@@ -342,10 +344,16 @@ def bind_methods():
     dialog_port.pushButton.clicked.connect(func_for_send_serial_msg)
     dialog_port.pushButton_2.clicked.connect(dialog_port.recv_Text.clear)
     dialog_port.end_select.currentIndexChanged.connect(func_for_select_end_char)
-    dialog_port.AutoLast.clicked.connect(thread_listen.jump_to_last_line)
-    thread_listen.worker.jump_sig.connect(dialog_port.recv_Text.setTextCursor)
-    thread_listen.worker.send_char_sig.connect(func_for_insert_port_text)
-    thread_listen.worker.erro_sig.connect(func_for_serial_erro)
+    # dialog_port.AutoLast.clicked.connect(thread_listen.jump_to_last_line)
+    dialog_port.AutoLast.clicked.connect(thread_StepAndSpeed.jump_to_last_line)
+    
+    # thread_listen.worker.jump_sig.connect(dialog_port.recv_Text.setTextCursor)
+    # thread_listen.worker.send_char_sig.connect(func_for_insert_port_text)
+    # thread_listen.worker.erro_sig.connect(func_for_serial_erro)
+    thread_StepAndSpeed.worker.jump_sig.connect(dialog_port.recv_Text.setTextCursor)
+    thread_StepAndSpeed.worker.send_char_sig.connect(func_for_insert_port_text)
+    thread_StepAndSpeed.worker.erro_sig.connect(func_for_serial_erro)
+    
     diaPortAPP.showEvent = func_for_open_serial_dialog
     diaPortAPP.closeEvent = func_for_close_serial_dialog
     
@@ -353,6 +361,7 @@ def bind_methods():
     dialog_joyconfig.addSettingButton.clicked.connect(axisAPP.exec)
     thread_joylisten.signal_boject.text_sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
     thread_joylisten.signal_boject.dic_sender.connect(dialog_joy_setting_update)
+    
     diaJoyAPP.accepted.connect(func_for_close_joySet_dialog)
     diaJoyAPP.rejected.connect(func_for_close_joySet_dialog)
     dialog_joyconfig.nowSettingShow.itemDoubleClicked.connect(change_joyset)
@@ -378,7 +387,7 @@ def bind_methods():
 def close_methods(*args):
     """主窗口关闭时进行的动作"""
     save_options()
-    thread_listen.isRunning = False
+    # thread_listen.isRunning = False
     thread_joylisten.isRunning = False
     thread_StepAndSpeed.isRunning = False
     SurgRobot.close_robot_port()
@@ -389,7 +398,7 @@ def init_methods(*args):
     """主函数开始运行时的动作"""
     load_joy_options()
     load_options()
-    open_serial_thread()
+    # open_serial_thread()
     open_joy_thread()
     thread_StepAndSpeed.start()
 

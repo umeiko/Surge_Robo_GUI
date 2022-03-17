@@ -3,6 +3,7 @@ import serial.tools.list_ports
 import struct
 import threading
 from PySide6.QtCore import Signal, QObject
+import numpy as np
 
 
 class Robot(QObject):
@@ -52,9 +53,9 @@ class Robot(QObject):
         if buffer is not None:
             try:
                 x, y, z = struct.unpack("3q", buffer)
-                x = x / 100000 * 1.875
-                y = y / 100000 * 1.875
-                z = z / 100000 * 1.875
+                x = x  * 10
+                y = y / 360 * 8 * np.pi
+                z = (z / 150 / 50 * 360) % 360
             except:
                 pass
         return (x, y, z)

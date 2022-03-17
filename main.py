@@ -205,11 +205,11 @@ def func_for_lcd_speed(*args):
     """刷新速度显示窗口"""
     motoId, spd = args
     if motoId == 0:
-      main_window.speed_UI_list[0].display(round(spd/640,3))
+      main_window.speed_UI_list[0].display(round(spd*14*np.pi/640,3))
     if motoId == 1:
         main_window.speed_UI_list[1].display(round(spd*np.pi/45,3))
     if motoId == 2:
-      main_window.speed_UI_list[2].display(round(spd,3)) 
+      main_window.speed_UI_list[2].display(round((spd/150/50*360)%360,3)) 
 
 def func_for_lcd_pos(*args):
     """刷新位置显示窗口"""

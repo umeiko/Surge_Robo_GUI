@@ -148,16 +148,20 @@ def func_for_send_serial_msg(*args):
 def open_joy_thread():
     """打开监听手柄的后台线程"""
     global thread_joylisten
+    thread_joylisten = flash_joyState_text()
+    thread_joylisten.name = "手柄调试助手线程"
+    thread_joylisten.signal_boject.text_sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
+    thread_joylisten.signal_boject.dic_sender.connect(dialog_joy_setting_update)    
     thread_joylisten.start()
 
 def func_for_open_joySet_dialog(*args):
     """打开手柄调试窗口时运行的函数"""
     dialog_joyconfig.joyStateShow.clear()
-    global thread_joylisten
     JoyStick.close_joystick()
     index = global_options["last_joy"]
     if index > 0:
-        thread_joylisten.set_joy(global_options["last_joy"]-1)
+        open_joy_thread()
+        thread_joylisten.set_joy(index-1)
     else:
         dialog_joy_setting_update(load_joy_options()["default"])
         dialog_joyconfig.joyStateShow.append("手柄未选择")
@@ -167,6 +171,7 @@ def func_for_close_joySet_dialog(*args):
     """关闭手柄调试窗口时运行的函数"""
     global thread_joylisten
     thread_joylisten.ignore_joy()
+    thread_joylisten.isRunning = False
     index = global_options["last_joy"]
     if index > 0:
         JoyStick.start_joystick(global_options["last_joy"]-1)
@@ -222,7 +227,6 @@ def dialog_joy_setting_update(dict):
     for axis_bind_tuple in dict["axis"]:
         motoID, axis, fromLow, fromHigh, toLow, toHigh = axis_bind_tuple
         dialog_joyconfig.nowSettingShow.addItem(f"轴{axis}: {motoName[motoID]}\n    ({fromLow},{fromHigh})->({toLow},{toHigh})")
-    pass
 
 
 def disable_swicher(button_id, state=None):
@@ -359,8 +363,8 @@ def bind_methods():
     
     # dialog_joy
     dialog_joyconfig.addSettingButton.clicked.connect(axisAPP.exec)
-    thread_joylisten.signal_boject.text_sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
-    thread_joylisten.signal_boject.dic_sender.connect(dialog_joy_setting_update)
+    # thread_joylisten.signal_boject.text_sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
+    # thread_joylisten.signal_boject.dic_sender.connect(dialog_joy_setting_update)
     
     diaJoyAPP.accepted.connect(func_for_close_joySet_dialog)
     diaJoyAPP.rejected.connect(func_for_close_joySet_dialog)
@@ -388,7 +392,7 @@ def close_methods(*args):
     """主窗口关闭时进行的动作"""
     save_options()
     # thread_listen.isRunning = False
-    thread_joylisten.isRunning = False
+    # thread_joylisten.isRunning = False
     thread_StepAndSpeed.isRunning = False
     SurgRobot.close_robot_port()
     JoyStick.close_joystick()
@@ -399,7 +403,7 @@ def init_methods(*args):
     load_joy_options()
     load_options()
     # open_serial_thread()
-    open_joy_thread()
+    # open_joy_thread()
     thread_StepAndSpeed.start()
 
 

@@ -5,12 +5,15 @@ import threading
 from PySide6.QtCore import Signal, QObject
 # 导入依赖
 import time
-
-
+try:
+    import pyd_extentions.joyCtrlFuncs as joyCtrlFuncs
+    print("已部署高性能Cython, 提升joyCtrl性能")
+except BaseException as e:
+    import pyd_extentions.slowJoyCtrlFuncs as joyCtrlFuncs
+    print("无法部署高性能Cython, 使用普通python实现")
 
 pygame.init()
 joystick.init()
-
 
 # joy_config = {
 #     "default" : {
@@ -64,15 +67,15 @@ def spd_map_func_(maps=[-1, 1, -3600, 3600]):
     b = (maps[2] - k*maps[0])
     return k, b
 
-def axis_shift_cancelling(axis_value, fix_value=0.05):
-    """消除轴的零漂"""
-    if fix_value > axis_value  > -fix_value:
-        axis_value  = 0
-    elif -1. < axis_value  < -1 + fix_value:
-        axis_value  = -1
-    elif 1. > axis_value  > 1 - fix_value:
-        axis_value  = 1
-    return axis_value
+# def axis_shift_cancelling(axis_value, fix_value=0.05):
+#     """消除轴的零漂"""
+#     if fix_value > axis_value  > -fix_value:
+#         axis_value  = 0
+#     elif -1. < axis_value  < -1 + fix_value:
+#         axis_value  = -1
+#     elif 1. > axis_value  > 1 - fix_value:
+#         axis_value  = 1
+#     return axis_value
 
 class Signal_Worker(QObject):
     text_sender = Signal(str)
@@ -175,38 +178,59 @@ class thread_joystick(threading.Thread):
 
     def axis_speed_ctrl(self, axis_id, moto_id, k, b):
         '''通过轴号控制电机的速度'''
+        # axis_value = self.joy.get_axis(axis_id)
+        # axis_value = axis_shift_cancelling(axis_value)
+        
+        # speed = k*axis_value + b if axis_value != 0 else 0
+        # speed_old = self.axes_list[axis_id]
+
+        # if abs(speed-speed_old) > 2 or (speed==0 and speed_old!=0):
+        #     self.robot.set_speed(moto_id, speed)
+        #     self.axes_list[axis_id] = speed
         
         axis_value = self.joy.get_axis(axis_id)
-        axis_value = axis_shift_cancelling(axis_value)
-        
-        speed = k*axis_value + b if axis_value != 0 else 0
         speed_old = self.axes_list[axis_id]
-        
-        if abs(speed-speed_old) > 2 or (speed==0 and speed_old!=0):
+        speed = joyCtrlFuncs.deal_speed(axis_value, speed_old, k, b, 0.05)
+        if speed != speed_old:
             self.robot.set_speed(moto_id, speed)
             self.axes_list[axis_id] = speed
+        
+    
     
     def double_axis_ctrl(self, moto_id, axis_1, k1, b1, axis_2, k2, b2):
         '''同时通过两个轴控制电机的速度'''
+        # axis1_value = self.joy.get_axis(axis_1)
+        # axis2_value = self.joy.get_axis(axis_2)
+        
+        # axis1_value = axis_shift_cancelling(axis1_value)
+        # axis2_value = axis_shift_cancelling(axis2_value)
+        
+        # speed1 = k1*axis1_value + b1 if axis1_value != 0 else 0
+        # speed2 = k2*axis2_value + b2 if axis2_value != 0 else 0
+        
+        # speed1_old = self.axes_list[axis_1]
+        # speed2_old = self.axes_list[axis_2]
+        
+        # speed = speed1 + speed2
+        # speed_old = speed1_old + speed2_old
+        
+        # if abs(speed-speed_old) > 2 or (speed==0 and speed_old!=0):
+        #     self.robot.set_speed(moto_id, speed)
+        #     self.axes_list[axis_1] = speed1
+        #     self.axes_list[axis_2] = speed2
+        
         axis1_value = self.joy.get_axis(axis_1)
         axis2_value = self.joy.get_axis(axis_2)
-        
-        axis1_value = axis_shift_cancelling(axis1_value)
-        axis2_value = axis_shift_cancelling(axis2_value)
-        
-        speed1 = k1*axis1_value + b1 if axis1_value != 0 else 0
-        speed2 = k2*axis2_value + b2 if axis2_value != 0 else 0
-        
-        speed1_old = self.axes_list[axis_1]
-        speed2_old = self.axes_list[axis_2]
-        
-        speed = speed1 + speed2
-        speed_old = speed1_old + speed2_old
-        
-        if abs(speed-speed_old) > 2 or (speed==0 and speed_old!=0):
+        speed_old = self.axes_list[axis_1]
+        speed = joyCtrlFuncs.deal_double_speed( axis1_value, 
+                                                axis2_value, 
+                                                speed_old, 
+                                                k1, b1, 
+                                                k2, b2, 
+                                                0.05)
+        if speed != speed_old:
             self.robot.set_speed(moto_id, speed)
-            self.axes_list[axis_1] = speed1
-            self.axes_list[axis_2] = speed2
+            self.axes_list[axis_1] = speed
             
     def bond_button_func(self, button_num, func):
         """将按钮号与指定的函数相绑定"""
@@ -221,10 +245,7 @@ class thread_joystick(threading.Thread):
         """处理两个轴被绑定到同一个电机上的情况"""
         k1, b1 = spd_map_func_(spd_map_1)
         k2, b2 = spd_map_func_(spd_map_2)
-        print(moto_id, axis_1, k1, b1, axis_2, k2, b2)
         self.axes_ctrl_funcs.append(lambda: self.double_axis_ctrl(moto_id, axis_1, k1, b1, axis_2, k2, b2))
-
-
 
 
 class flash_joyState_text(threading.Thread):

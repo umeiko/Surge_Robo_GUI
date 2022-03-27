@@ -10,7 +10,8 @@ from PySide6.QtGui import QIcon, QShortcut
 import sys
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
-
+import numpy as np
+##
 
 
 main_window = Ui_MainWindow() # 主界面
@@ -208,7 +209,12 @@ def func_for_print_args(*args):
 def func_for_lcd_speed(*args):
     """刷新速度显示窗口"""
     motoId, spd = args
-    main_window.speed_UI_list[motoId].display(round(spd,3))
+    if motoId == 0:
+      main_window.speed_UI_list[0].display(round(spd*14*np.pi/640,3))
+    if motoId == 1:
+        main_window.speed_UI_list[1].display(round(spd*np.pi/45,3))
+    if motoId == 2:
+      main_window.speed_UI_list[2].display(round((spd/150/50*360)%360,3)) 
 
 def func_for_lcd_pos(*args):
     """刷新位置显示窗口"""
@@ -235,10 +241,13 @@ def disable_swicher(button_id, state=None):
     style_str = ""
     if button_id == 0:
         button = main_window.cath_disable_button
+        SurgRobot.flags[0] = not SurgRobot.flags[0]
     elif button_id == 1:
         button = main_window.wire_disable_button
+        SurgRobot.flags[1] = not SurgRobot.flags[1]
     elif button_id == 2:
         button = main_window.wire_rot_disable_button
+        SurgRobot.flags[2] = not SurgRobot.flags[2]
     if global_options["skin_mode"] == "classic":
         style_str = ""
     elif global_options["skin_mode"] == "MaterialDark":

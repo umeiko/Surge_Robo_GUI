@@ -3,6 +3,7 @@ import serial.tools.list_ports
 import struct
 import threading
 from PySide6.QtCore import Signal, QObject
+import numpy as np
 
 
 class Robot(QObject):
@@ -16,6 +17,7 @@ class Robot(QObject):
         self.ser.baudrate = 115200
         self.ser.timeout = 0.005
         self.gear_level  = 0.2
+        self.flags = [False, False, False] #禁止标志位
         if COM_num is not None:
             self.ser.port = COM_num
             self.ser.open()
@@ -51,9 +53,9 @@ class Robot(QObject):
         if buffer is not None:
             try:
                 x, y, z = struct.unpack("3q", buffer)
-                x = x / 100000 * 1.875
-                y = y / 100000 * 1.875
-                z = z / 100000 * 1.875
+                x = x  * 10
+                y = y / 360 * 8 * np.pi
+                z = (z / 150 / 50 * 360) % 360
             except:
                 pass
         return (x, y, z)
@@ -73,10 +75,15 @@ class Robot(QObject):
     
     def set_speed(self, id, spd, is_geared=True):
         """设置某一轴的速度"""
+        
         if is_geared:
             spd = self.gear_level * spd
-        self.spd_signal.emit(id, spd)
-        self.set_speed_freq(id, spd)
+        if self.flags[id]:    
+          self.spd_signal.emit(id, spd)
+          self.set_speed_freq(id, spd)
+        else:
+          self.spd_signal.emit(id, 0)  
+          self.set_speed_freq(id, 0)   
 
     
     def scan_ports(self):

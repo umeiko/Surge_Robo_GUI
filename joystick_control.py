@@ -1,10 +1,8 @@
-from signal import Signals
 import pygame
 from pygame import joystick
 import threading
 from PySide6.QtCore import Signal, QObject
 # 导入依赖
-import time
 try:
     import pyd_extentions.joyCtrlFuncs as joyCtrlFuncs
     print("已部署高性能Cython, 提升joyCtrl性能")
@@ -56,13 +54,13 @@ def minus_gaer(robot, widget):
 
 
 def spd_map_func(map_in=[-1,1], map_out=[-3600, 3600]):
-    """将速度从区间a线性映射到区间b，返回函数的斜率k和偏置b"""
+    """将速度从区间a线性映射到区间b, 返回函数的斜率k和偏置b"""
     k = (map_out[1] - map_out[0]) / (map_in[1] - map_in[0])
     b = (map_out[0] - k*map_in[0])
     return k, b
 
 def spd_map_func_(maps=[-1, 1, -3600, 3600]):
-    """将速度从区间a线性映射到区间b，返回函数的斜率k和偏置b"""
+    """将速度从区间a线性映射到区间b, 返回函数的斜率k和偏置b"""
     k = (maps[3] - maps[2]) / (maps[1] - maps[0])
     b = (maps[2] - k*maps[0])
     return k, b
@@ -92,19 +90,19 @@ class joystick_manager():
         self.main_window = main_window
         self.robot = robot
         self.signals = Signal_Worker()
-        pass
+
     
     def set_joy(self, joyID):
         self.signals.send_dict(joy_config["default"])
 
 
-    def start_joystick(self, id):
+    def start_joystick(self, id: int):
         """开始手柄线程"""
         if self.thread is not None:
             self.thread.isRunning = False
             del self.joy
         self.joy = joystick.Joystick(id)
-        self.thread = thread_joystick(self.joy, self.robot, self.main_window)
+        self.thread = thread_joystick(self.joy, self.robot)
         self.thread.name = "手柄操作线程"
         self.config_joystick()
         self.thread.start()
@@ -143,16 +141,15 @@ class joystick_manager():
 
 
 class thread_joystick(threading.Thread):
-    """传入pygame.joystick.Joystick实例，以及robot实例。该实例提供set_speed(int id, fload speed)方法"""
-    def __init__(self, joy, robot, main_window=None, FPS=60) -> None:
+    """传入pygame.joystick.Joystick实例, 以及robot实例。该实例提供set_speed(int id, fload speed)方法"""
+    def __init__(self, joy, robot, FPS=60) -> None:
         threading.Thread.__init__(self)
         self.CLOCK = pygame.time.Clock()
         self.robot = robot
         self.joy = joy
         self.joy.init()
         self.FPS = FPS
-        self.main_window = main_window
-        self.axes_list = [0 for _ in range(self.joy.get_numaxes())]
+        self.axes_list = [0. for _ in range(self.joy.get_numaxes())]
         self.button_list = [0 for _ in range(self.joy.get_numaxes())]
         self.axes_ctrl_funcs =   []
         self.button_ctrl_funcs = [None for _ in range(self.joy.get_numbuttons())]
@@ -176,7 +173,7 @@ class thread_joystick(threading.Thread):
             self.CLOCK.tick(self.FPS)
         print("手柄进程被终止")     
 
-    def axis_speed_ctrl(self, axis_id, moto_id, k, b):
+    def axis_speed_ctrl(self, axis_id:int, moto_id:int, k:float, b:float)->None:
         '''通过轴号控制电机的速度'''
         # axis_value = self.joy.get_axis(axis_id)
         # axis_value = axis_shift_cancelling(axis_value)
@@ -197,7 +194,7 @@ class thread_joystick(threading.Thread):
         
     
     
-    def double_axis_ctrl(self, moto_id, axis_1, k1, b1, axis_2, k2, b2):
+    def double_axis_ctrl(self, moto_id:int, axis_1:int, k1:float, b1:float, axis_2:int, k2:float, b2:float)->None:
         '''同时通过两个轴控制电机的速度'''
         # axis1_value = self.joy.get_axis(axis_1)
         # axis2_value = self.joy.get_axis(axis_2)
@@ -232,7 +229,7 @@ class thread_joystick(threading.Thread):
             self.robot.set_speed(moto_id, speed)
             self.axes_list[axis_1] = speed
             
-    def bond_button_func(self, button_num, func):
+    def bond_button_func(self, button_num:int, func):
         """将按钮号与指定的函数相绑定"""
         self.button_ctrl_funcs[button_num] = func
 

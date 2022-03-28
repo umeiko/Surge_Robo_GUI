@@ -4,6 +4,9 @@ import struct
 import threading
 from PySide6.QtCore import Signal, QObject
 
+from typing import List, Tuple
+PositionVector = Tuple[float, float, float]
+
 
 class Robot(QObject):
     spd_signal = Signal(int, float)  # id, spd
@@ -24,7 +27,7 @@ class Robot(QObject):
             self.ser.port = None
             self.position = None
 
-    def get_position(self):
+    def get_position(self)->PositionVector:
         '''查询电机位置信息'''
         buffer = None
         if self.ser.isOpen():
@@ -54,11 +57,11 @@ class Robot(QObject):
                 x = x / 100000 * 1.875
                 y = y / 100000 * 1.875
                 z = z / 100000 * 1.875
-            except:
+            except Exception:
                 pass
         return (x, y, z)
 
-    def set_speed_freq(self, id, freq):
+    def set_speed_freq(self, id:int, freq:float):
         """设置步进电机的驱动频率"""
         msg = f":{id} {round(freq, 2)}\r\n".encode()
         if self.ser.isOpen():
@@ -71,7 +74,7 @@ class Robot(QObject):
         else:
             print(msg)
     
-    def set_speed(self, id, spd, is_geared=True):
+    def set_speed(self, id:int, spd:float, is_geared=True):
         """设置某一轴的速度"""
         if is_geared:
             spd = self.gear_level * spd
@@ -86,7 +89,7 @@ class Robot(QObject):
         names = [i.description for i in options]
         return ports, names
     
-    def open_robot_port(self, port):
+    def open_robot_port(self, port:str):
         """在输入的串口号上打开机器人通讯"""
         if (self.ser.isOpen() and port != self.ser.port):
             self.read_lock.acquire()

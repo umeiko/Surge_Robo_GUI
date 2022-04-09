@@ -94,9 +94,9 @@ class Speed_Conver:
             self.f_MG2 = self.spd
         y= np.array([self.w_MG1,self.f_MG2,self.f_MC1*14*np.pi]).T
         speed_cop = np.matmul(temp,y) # 导丝速度（mm/s），导丝旋转速度(°/s)，导管速度(mm/s)
-        main_window.speed_UI_list[0].display(round(speed_cop[2],3))
-        main_window.speed_UI_list[1].display(round(speed_cop[0],3))
-        main_window.speed_UI_list[2].display(round(speed_cop[1],3))
+        main_window.speed_UI_list[0].display(round(-speed_cop[2],3))
+        main_window.speed_UI_list[1].display(round(-speed_cop[0],3))
+        main_window.speed_UI_list[2].display(round(-speed_cop[1],3))
 
 def fresh_ports():
     """刷新系统当前连接的串口设备"""

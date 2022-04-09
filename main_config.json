@@ -17,5 +17,9 @@
     "temp_joys_list": [
         "PS4 Controller"
     ],
-    "temp_ports_list": []
+    "temp_ports_list": [
+        "COM12",
+        "COM1",
+        "COM23"
+    ]
 }

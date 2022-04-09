@@ -52,7 +52,7 @@ class Robot(QObject):
         if buffer is not None:
             try:
                 x, y, z = struct.unpack("3q", buffer)
-                x = x  / 6400* 10
+                x = x  / 6400* 10.715
                 y = y / 360 * 8 * np.pi + x
                 z = (z / 9000 * 360) % 360
             except:

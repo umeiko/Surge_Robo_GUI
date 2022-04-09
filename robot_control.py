@@ -3,10 +3,7 @@ import serial.tools.list_ports
 import struct
 import threading
 from PySide6.QtCore import Signal, QObject
-
-from typing import List, Tuple
-PositionVector = Tuple[float, float, float]
-
+import numpy as np
 
 class Robot(QObject):
     spd_signal = Signal(int, float)  # id, spd
@@ -19,6 +16,7 @@ class Robot(QObject):
         self.ser.baudrate = 115200
         self.ser.timeout = 0.005
         self.gear_level  = 0.2
+        self.flags = [False, False, False] #禁止标志位
         if COM_num is not None:
             self.ser.port = COM_num
             self.ser.open()
@@ -27,7 +25,7 @@ class Robot(QObject):
             self.ser.port = None
             self.position = None
 
-    def get_position(self)->PositionVector:
+    def get_position(self):
         '''查询电机位置信息'''
         buffer = None
         if self.ser.isOpen():
@@ -54,14 +52,14 @@ class Robot(QObject):
         if buffer is not None:
             try:
                 x, y, z = struct.unpack("3q", buffer)
-                x = x / 100000 * 1.875
-                y = y / 100000 * 1.875
-                z = z / 100000 * 1.875
-            except Exception:
+                x = x  / 6400* 10.715
+                y = y / 360 * 8 * np.pi + x
+                z = (z / 9000 * 360) % 360
+            except:
                 pass
         return (x, y, z)
 
-    def set_speed_freq(self, id:int, freq:float):
+    def set_speed_freq(self, id, freq):
         """设置步进电机的驱动频率"""
         msg = f":{id} {round(freq, 2)}\r\n".encode()
         if self.ser.isOpen():
@@ -74,12 +72,17 @@ class Robot(QObject):
         else:
             print(msg)
     
-    def set_speed(self, id:int, spd:float, is_geared=True):
+    def set_speed(self, id, spd, is_geared=True):
         """设置某一轴的速度"""
+        
         if is_geared:
             spd = self.gear_level * spd
-        self.spd_signal.emit(id, spd)
-        self.set_speed_freq(id, spd)
+        if self.flags[id]:    
+          self.spd_signal.emit(id, spd)
+          self.set_speed_freq(id, spd)
+        else:
+          self.spd_signal.emit(id, 0)  
+          self.set_speed_freq(id, 0)   
 
     
     def scan_ports(self):
@@ -89,7 +92,7 @@ class Robot(QObject):
         names = [i.description for i in options]
         return ports, names
     
-    def open_robot_port(self, port:str):
+    def open_robot_port(self, port):
         """在输入的串口号上打开机器人通讯"""
         if (self.ser.isOpen() and port != self.ser.port):
             self.read_lock.acquire()

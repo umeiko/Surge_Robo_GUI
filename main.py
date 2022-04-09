@@ -1,3 +1,4 @@
+from cmath import pi
 from mainwindow import Ui_MainWindow
 from portDialog import Ui_Dialog as port_dialog
 from joystickDialog import Ui_Dialog as joystick_dialog
@@ -10,8 +11,7 @@ from PySide6.QtGui import QIcon, QShortcut
 import sys
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
-
-
+import numpy as np
 
 main_window = Ui_MainWindow() # 主界面
 dialog_port = port_dialog()   # 串口调试助手
@@ -35,6 +35,8 @@ main_window.speed_UI_list = [main_window.cath_speed_lcd,
 
 SurgRobot = Robot()
 JoyStick = joystick_manager(SurgRobot, main_window)
+# thread_listen      = serial_widget_thread.read_thr(SurgRobot, dialog_port)
+# thread_listen.name = "串口调试助手线程"
 thread_joylisten   = flash_joyState_text()
 thread_joylisten.name = "手柄调试助手线程"
 thread_StepAndSpeed   =  serial_widget_thread.msg_fresh_thr(SurgRobot, dialog_port)
@@ -44,6 +46,7 @@ thread_StepAndSpeed.name = "串口异步处理线程"
 cursor = dialog_port.recv_Text.textCursor()
 joy_config_flag  = True
 joy_config_index = -1
+fashion_flag = False
 
 global_options = {
     "temp_ports_list": [],
@@ -57,13 +60,49 @@ global_options = {
     "disable_states" : [True, True, True],
 }
 
+class Speed_Conver:
+    """速度转换矩阵表示"""
+    def __init__(self,motorId,spd):
+        self.w_MG1 = 0 # 导丝递送电机输入(°/s)
+        self.f_MG2 = 0 # 导丝旋转电机输入(Hz)
+        self.f_MC1 = 0 # 直线平台电机输入(Hz)
+        # self.f_MC2 = 0 # 导管递送电机输入(°/s)
+        self.spd = spd
+        self.motorId = motorId
+        self.theta_s1 = 1.8 # 导丝转台电机的步距角
+        self.theta_s2 = 1.8 # 直线平台电机的步距角
+        self.K = 1/18 # 导丝转台的齿比
+        self.K1 = 1/2.5 # 导丝转台电机的细分
+        self.K2 = 1/32 # 直线平台电机的细分
+        self.d1 = 8 # 单位mm  导丝递送摩擦轮直径
+        # self.d2 = 8 # 单位mm  导管递送摩擦轮直径
+        self.S = 10 # 单位mm  直线平台的导程
+ 
+    def speed_conversion(self):
+        A_1 = np.array([[360,0,0],
+                        [0,360/(self.theta_s1*self.K1),0],
+                        [0,0,360/(self.theta_s2*self.K2)],])
+        A_2 = np.array([[1/(np.pi*self.d1),0,-1/(np.pi*self.d1)],
+                       [0,1/(self.K*360),0],
+                       [0,0,1/self.S]])
+        temp = np.linalg.pinv(np.matmul(A_1,A_2))
+        if(self.motorId == 0):
+            self.f_MC1 = self.spd
+        if(self.motorId == 1):
+            self.w_MG1 = self.spd
+        if(self.motorId == 2):
+            self.f_MG2 = self.spd
+        y= np.array([self.w_MG1,self.f_MG2,self.f_MC1*14*np.pi]).T
+        speed_cop = np.matmul(temp,y) # 导丝速度（mm/s），导丝旋转速度(°/s)，导管速度(mm/s)
+        main_window.speed_UI_list[0].display(round(-speed_cop[2],3))
+        main_window.speed_UI_list[1].display(round(-speed_cop[0],3))
+        main_window.speed_UI_list[2].display(round(-speed_cop[1],3))
 
 def fresh_ports():
     """刷新系统当前连接的串口设备"""
     main_window.com_select.setItemText(0, "断开连接")
     ports, names = SurgRobot.scan_ports()
     
-
     for k, i in enumerate(global_options["temp_ports_list"]):
         # 删除已不存在的端口
         if i not in ports:
@@ -145,20 +184,16 @@ def func_for_send_serial_msg(*args):
 def open_joy_thread():
     """打开监听手柄的后台线程"""
     global thread_joylisten
-    thread_joylisten = flash_joyState_text()
-    thread_joylisten.name = "手柄调试助手线程"
-    thread_joylisten.signal_boject.text_sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
-    thread_joylisten.signal_boject.dic_sender.connect(dialog_joy_setting_update)    
     thread_joylisten.start()
 
 def func_for_open_joySet_dialog(*args):
     """打开手柄调试窗口时运行的函数"""
     dialog_joyconfig.joyStateShow.clear()
+    global thread_joylisten
     JoyStick.close_joystick()
     index = global_options["last_joy"]
     if index > 0:
-        open_joy_thread()
-        thread_joylisten.set_joy(index-1)
+        thread_joylisten.set_joy(global_options["last_joy"]-1)
     else:
         dialog_joy_setting_update(load_joy_options()["default"])
         dialog_joyconfig.joyStateShow.append("手柄未选择")
@@ -168,7 +203,6 @@ def func_for_close_joySet_dialog(*args):
     """关闭手柄调试窗口时运行的函数"""
     global thread_joylisten
     thread_joylisten.ignore_joy()
-    thread_joylisten.isRunning = False
     index = global_options["last_joy"]
     if index > 0:
         JoyStick.start_joystick(global_options["last_joy"]-1)
@@ -205,7 +239,8 @@ def func_for_print_args(*args):
 def func_for_lcd_speed(*args):
     """刷新速度显示窗口"""
     motoId, spd = args
-    main_window.speed_UI_list[motoId].display(round(spd,3))
+    speed_c = Speed_Conver(motoId,spd)
+    speed_c.speed_conversion()
 
 def func_for_lcd_pos(*args):
     """刷新位置显示窗口"""
@@ -224,6 +259,7 @@ def dialog_joy_setting_update(dict):
     for axis_bind_tuple in dict["axis"]:
         motoID, axis, fromLow, fromHigh, toLow, toHigh = axis_bind_tuple
         dialog_joyconfig.nowSettingShow.addItem(f"轴{axis}: {motoName[motoID]}\n    ({fromLow},{fromHigh})->({toLow},{toHigh})")
+    pass
 
 
 def disable_swicher(button_id, state=None):
@@ -232,10 +268,13 @@ def disable_swicher(button_id, state=None):
     style_str = ""
     if button_id == 0:
         button = main_window.cath_disable_button
+        SurgRobot.flags[0] = not SurgRobot.flags[0]
     elif button_id == 1:
         button = main_window.wire_disable_button
+        SurgRobot.flags[1] = not SurgRobot.flags[1]
     elif button_id == 2:
         button = main_window.wire_rot_disable_button
+        SurgRobot.flags[2] = not SurgRobot.flags[2]
     if global_options["skin_mode"] == "classic":
         style_str = ""
     elif global_options["skin_mode"] == "MaterialDark":
@@ -345,8 +384,12 @@ def bind_methods():
     dialog_port.pushButton.clicked.connect(func_for_send_serial_msg)
     dialog_port.pushButton_2.clicked.connect(dialog_port.recv_Text.clear)
     dialog_port.end_select.currentIndexChanged.connect(func_for_select_end_char)
+    # dialog_port.AutoLast.clicked.connect(thread_listen.jump_to_last_line)
     dialog_port.AutoLast.clicked.connect(thread_StepAndSpeed.jump_to_last_line)
     
+    # thread_listen.worker.jump_sig.connect(dialog_port.recv_Text.setTextCursor)
+    # thread_listen.worker.send_char_sig.connect(func_for_insert_port_text)
+    # thread_listen.worker.erro_sig.connect(func_for_serial_erro)
     thread_StepAndSpeed.worker.jump_sig.connect(dialog_port.recv_Text.setTextCursor)
     thread_StepAndSpeed.worker.send_char_sig.connect(func_for_insert_port_text)
     thread_StepAndSpeed.worker.erro_sig.connect(func_for_serial_erro)
@@ -356,12 +399,13 @@ def bind_methods():
     
     # dialog_joy
     dialog_joyconfig.addSettingButton.clicked.connect(axisAPP.exec)
-
+    thread_joylisten.signal_boject.text_sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
+    thread_joylisten.signal_boject.dic_sender.connect(dialog_joy_setting_update)
+    
     diaJoyAPP.accepted.connect(func_for_close_joySet_dialog)
     diaJoyAPP.rejected.connect(func_for_close_joySet_dialog)
     dialog_joyconfig.nowSettingShow.itemDoubleClicked.connect(change_joyset)
     diaJoyAPP.showEvent = func_for_open_joySet_dialog
-    
     # dialog_axis_add
     dialog_axis_add.buttonBox.accepted.connect(save_joyset)
 
@@ -384,7 +428,7 @@ def close_methods(*args):
     """主窗口关闭时进行的动作"""
     save_options()
     # thread_listen.isRunning = False
-    # thread_joylisten.isRunning = False
+    thread_joylisten.isRunning = False
     thread_StepAndSpeed.isRunning = False
     SurgRobot.close_robot_port()
     JoyStick.close_joystick()
@@ -395,7 +439,7 @@ def init_methods(*args):
     load_joy_options()
     load_options()
     # open_serial_thread()
-    # open_joy_thread()
+    open_joy_thread()
     thread_StepAndSpeed.start()
 
 
@@ -539,14 +583,18 @@ def load_options():
 
 def read_qss_file(qss_file_name):
     with open(qss_file_name, 'r',  encoding='UTF-8') as file:
-        return file.read()      
+        return file.read()     
+        
+
 
 def main():
+    
     bind_methods()
     init_methods()
     w.closeEvent = close_methods
     w.show()
     sys.exit(app.exec())
+
 
 
 if __name__ == "__main__":

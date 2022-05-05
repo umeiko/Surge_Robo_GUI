@@ -403,8 +403,10 @@ def change_style_classic():
     """切换样式到经典"""
     if global_options["skin_mode"] != "classic":
         global_options["skin_mode"] = "classic"
-        w.setStyleSheet("")
-        diaPortAPP.setStyleSheet("")
+        style_sheet = ""
+        w.setStyleSheet(style_sheet)
+        diaPortAPP.setStyleSheet(style_sheet)
+        diaJoyAPP.setStyleSheet(style_sheet)
         main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up.png);\n""")
         main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down.png);\n""")
         main_window.wire_up_button.setStyleSheet(u"border-image: url(:/up.png);\n""")
@@ -428,6 +430,7 @@ def change_style_dark():
         style_file = './resources/QSS/MaterialDark.qss'
         style_sheet = read_qss_file(style_file)
         diaPortAPP.setStyleSheet(style_sheet)
+        diaJoyAPP.setStyleSheet(style_sheet)
         w.setStyleSheet(style_sheet)
         main_window.cath_up_button.setStyleSheet(u"border-image: url(:/up_dark.png);\n""")
         main_window.cath_down_button.setStyleSheet(u"border-image: url(:/down_dark.png);\n""")
@@ -516,7 +519,7 @@ def load_options():
     for key in global_options:
         try:
             temp_robo_options[key]
-        except:
+        except Exception:
             temp_robo_options[key] = global_options[key]
 
     if temp_robo_options["temp_ports_list"] == global_options["temp_ports_list"]:

@@ -4,7 +4,7 @@ from joystickDialog import Ui_Dialog as joystick_dialog
 from axisSetDialog import Ui_Dialog as axis_dialog
 import serial_widget_thread
 from robot_control import Robot
-from joystick_control import joystick_manager, flash_joyState_text, load_joy_options, spd_map_func
+from joystick_control import JoystickManager, JoyMessageGetter, load_joy_options, spd_map_func
 from robot_control import Robot
 from PySide6.QtGui import QIcon, QShortcut
 import sys
@@ -34,8 +34,8 @@ main_window.speed_UI_list = [main_window.cath_speed_lcd,
                              main_window.wire_rotSpeed_lcd]
 
 SurgRobot = Robot()
-JoyStick = joystick_manager(SurgRobot, main_window)
-thread_joylisten   = flash_joyState_text()
+JoyStick = JoystickManager(SurgRobot, main_window)
+thread_joylisten   = JoyMessageGetter()
 thread_joylisten.name = "手柄调试助手线程"
 thread_StepAndSpeed   =  serial_widget_thread.msg_fresh_thr(SurgRobot, dialog_port)
 thread_StepAndSpeed.name = "串口异步处理线程"
@@ -145,7 +145,7 @@ def func_for_send_serial_msg(*args):
 def open_joy_thread():
     """打开监听手柄的后台线程"""
     global thread_joylisten
-    thread_joylisten = flash_joyState_text()
+    thread_joylisten = JoyMessageGetter()
     thread_joylisten.name = "手柄调试助手线程"
     thread_joylisten.signal_boject.text_sender.connect(dialog_joyconfig.joyStateShow.setPlainText)
     thread_joylisten.signal_boject.dic_sender.connect(dialog_joy_setting_update)    
@@ -425,10 +425,10 @@ def change_style_classic():
 
 def change_style_dark():
     """切换样式到暗黑"""
+    import QSS
     if global_options["skin_mode"] != "MaterialDark":
         global_options["skin_mode"] = "MaterialDark"
-        style_file = './resources/QSS/MaterialDark.qss'
-        style_sheet = read_qss_file(style_file)
+        style_sheet = QSS.MaterialDark
         diaPortAPP.setStyleSheet(style_sheet)
         diaJoyAPP.setStyleSheet(style_sheet)
         w.setStyleSheet(style_sheet)
@@ -487,8 +487,8 @@ def change_joyset(*args):
     """读取手柄设置函数"""
     import json
     with open("joy_config.json", 'r') as js_file:
-      temp_robo_options = json.load(js_file)
-      joy_config = temp_robo_options
+        temp_robo_options = json.load(js_file)
+        joy_config = temp_robo_options
     dialog_axis_add.motoSelect.setCurrentIndex(joy_config['default']['axis'][dialog_joyconfig.nowSettingShow.currentRow()][0]+1)
     dialog_axis_add.axisSelect.setCurrentText(str(joy_config['default']['axis'][dialog_joyconfig.nowSettingShow.currentRow()][1]))
     dialog_axis_add.lowAxis.setValue(joy_config['default']['axis'][dialog_joyconfig.nowSettingShow.currentRow()][2])
@@ -511,8 +511,11 @@ def save_options():
 def load_options():
     """从文件中加载主窗口配置"""
     import json as json
-    with open("main_config.json", 'r') as js_file:
-        temp_robo_options = json.load(js_file)
+    try:
+        with open("main_config.json", 'r') as js_file:
+            temp_robo_options = json.load(js_file)
+    except Exception as e:
+        temp_robo_options = global_options
     fresh_ports()
     fresh_joystick()
 
@@ -541,6 +544,7 @@ def load_options():
 
 
 def read_qss_file(qss_file_name):
+    """从样式文件中加载样式"""
     with open(qss_file_name, 'r',  encoding='UTF-8') as file:
         return file.read()      
 

@@ -13,16 +13,16 @@ except BaseException as e:
 pygame.init()
 joystick.init()
 
-# joy_config = {
-#     "default" : {
-#         "axis"      : [(0, 1, -1, 1, -3600, 3600),
-#                        (1, 3, -1, 1, -3600, 3600),
-#                        (2, 4, -1, 1, 0, -3600),
-#                        (2, 5, -1, 1, 0, 3600),
-#                       ],
-#         "button"   : [(6, "plus_gaer"), (7, "minus_gear")],
-#     }
-# }
+default_joy_config = {
+    "default" : {
+        "axis"      : [(0, 1, -1, 1, -3600, 3600),
+                       (1, 3, -1, 1, -3600, 3600),
+                       (2, 4, -1, 1, 0, -3600),
+                       (2, 5, -1, 1, 0, 3600),
+                      ],
+        "button"   : [(6, "plus_gaer"), (7, "minus_gear")],
+    }
+}
 
 joy_config = None
 
@@ -37,8 +37,11 @@ def load_joy_options():
     """从文件中加载手柄配置"""
     global joy_config
     import json as json
-    with open("joy_config.json", 'r') as js_file:
-        joy_config = json.load(js_file)
+    try:
+        with open("joy_config.json", 'r') as js_file:
+            joy_config = json.load(js_file)
+    except Exception as e:
+        joy_config = default_joy_config
     return joy_config
 
 
@@ -83,7 +86,8 @@ class Signal_Worker(QObject):
     def send_dict(self, dic):
         self.dic_sender.emit(dic)
 
-class joystick_manager():
+class JoystickManager():
+    """管理手柄控制器的类【待修改, 需要将改变档位转为信号机制实现】"""
     def __init__(self, robot, main_window) -> None:
         self.joy = None
         self.thread = None
@@ -120,6 +124,7 @@ class joystick_manager():
         return joy_names
 
     def config_joystick(self):
+        """配置手柄, 为不同的轴安排功能"""
         moto_axes = [[], [], [], [], []]
         for i in joy_config["default"]["axis"]:
             moto_axes[i[0]].append(i)
@@ -142,7 +147,7 @@ class joystick_manager():
 
 class thread_joystick(threading.Thread):
     """传入pygame.joystick.Joystick实例, 以及robot实例。该实例提供set_speed(int id, fload speed)方法"""
-    def __init__(self, joy, robot, FPS=60) -> None:
+    def __init__(self, joy:pygame.joystick.Joystick, robot, FPS=60) -> None:
         threading.Thread.__init__(self)
         self.CLOCK = pygame.time.Clock()
         self.robot = robot
@@ -245,7 +250,8 @@ class thread_joystick(threading.Thread):
         self.axes_ctrl_funcs.append(lambda: self.double_axis_ctrl(moto_id, axis_1, k1, b1, axis_2, k2, b2))
 
 
-class flash_joyState_text(threading.Thread):
+class JoyMessageGetter(threading.Thread):
+    """周期性获取手柄信息并转换为文本信息的类"""
     def __init__(self):
         threading.Thread.__init__(self)
         self.joy = None

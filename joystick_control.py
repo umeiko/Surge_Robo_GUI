@@ -42,6 +42,7 @@ def load_joy_options():
             joy_config = json.load(js_file)
     except Exception as e:
         joy_config = default_joy_config
+        save_joy_options()
     return joy_config
 
 

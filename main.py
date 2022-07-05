@@ -543,7 +543,7 @@ def load_options():
         disable_swicher(button_id, state)
 
 
-def read_qss_file(qss_file_name):
+def read_qss_file(qss_file_name:str):
     """从样式文件中加载样式"""
     with open(qss_file_name, 'r',  encoding='UTF-8') as file:
         return file.read()      

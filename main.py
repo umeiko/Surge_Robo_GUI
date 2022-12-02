@@ -81,7 +81,7 @@ class Speed_Conver:
     def speed_conversion(self):
         A_1 = np.array([[360,0,0],
                         [0,360/(self.theta_s1*self.K1),0],
-                        [0,0,360/(self.theta_s2*self.K2)],])
+                        [0,0,360/(self.theta_s2*self.K2)]])
         A_2 = np.array([[1/(np.pi*self.d1),0,-1/(np.pi*self.d1)],
                        [0,1/(self.K*360),0],
                        [0,0,1/self.S]])
@@ -97,6 +97,9 @@ class Speed_Conver:
         main_window.speed_UI_list[0].display(round(-speed_cop[2],3))
         main_window.speed_UI_list[1].display(round(-speed_cop[0],3))
         main_window.speed_UI_list[2].display(round(-speed_cop[1],3))
+        if SurgRobot.mode_select :
+            main_window.speed_UI_list[1].display(0)
+        
 
 def fresh_ports():
     """刷新系统当前连接的串口设备"""
@@ -261,7 +264,6 @@ def dialog_joy_setting_update(dict):
         dialog_joyconfig.nowSettingShow.addItem(f"轴{axis}: {motoName[motoID]}\n    ({fromLow},{fromHigh})->({toLow},{toHigh})")
     pass
 
-
 def disable_swicher(button_id, state=None):
     """绑定禁用-启用按钮的方法, 同时可以改变机器人的禁用情况"""
     button = None
@@ -325,21 +327,24 @@ def func_add_step_mission(id, dir=1, time=1):
     """添加单步前进任务"""
     if id == 0:
         value = main_window.cath_step_slider.value()
-        k, b = spd_map_func((0, 99), (0.5, 2))    
+        k, b = spd_map_func((0, 99), (0.5, 2))  
+        value = -dir * (k * value + b) * 640 / (14 * np.pi)
     elif id == 1:
+        
         value = main_window.wire_step_slider.value()
         k, b = spd_map_func((0, 99), (0.5, 2))
+        value = -dir * (k * value + b) * 360 / (8 * np.pi) 
     elif id == 2:
         value = main_window.wireRot_step_slider.value()
         k, b = spd_map_func((0, 99), (5, 45))
-    value = dir * (k * value + b)
+        value = -dir * (k * value + b) * 9000 / 360
+    # value = dir * (k * value + b)
     thread_StepAndSpeed.addStep(id, value, time)
 
 def func_for_emergency_stop(*args):
     """急停开关执行的指令"""
     SurgRobot.all_stop()
     thread_StepAndSpeed.clearMissons()
-
 def bind_methods():
     """为各个小部件绑定事件"""
     global thread_listen
@@ -422,7 +427,16 @@ def bind_methods():
     main_window.cath_disable_button.clicked.connect(lambda: disable_swicher(0))
     main_window.wire_disable_button.clicked.connect(lambda: disable_swicher(1))
     main_window.wire_rot_disable_button.clicked.connect(lambda: disable_swicher(2))
+    main_window.cath_mode_select.currentIndexChanged.connect(
+                            lambda: WrittingNotOfOther(main_window.cath_mode_select.currentIndex()))  # 点击下拉列表，触发对应事件
 
+
+def WrittingNotOfOther(id):
+    if id == 1:
+        SurgRobot.mode_select = 1
+    else:
+        SurgRobot.mode_select = 0    
+            
 
 def close_methods(*args):
     """主窗口关闭时进行的动作"""
@@ -441,7 +455,6 @@ def init_methods(*args):
     # open_serial_thread()
     open_joy_thread()
     thread_StepAndSpeed.start()
-
 
 def change_style_classic():
     """切换样式到经典"""
@@ -588,7 +601,6 @@ def read_qss_file(qss_file_name):
 
 
 def main():
-    
     bind_methods()
     init_methods()
     w.closeEvent = close_methods

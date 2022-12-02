@@ -4,6 +4,8 @@ import struct
 import threading
 from PySide6.QtCore import Signal, QObject
 import numpy as np
+import mainwindow
+
 
 class Robot(QObject):
     spd_signal = Signal(int, float)  # id, spd
@@ -16,7 +18,9 @@ class Robot(QObject):
         self.ser.baudrate = 115200
         self.ser.timeout = 0.005
         self.gear_level  = 0.2
+        self.lastspeed = 0
         self.flags = [False, False, False] #禁止标志位
+        self.mode_select = False
         if COM_num is not None:
             self.ser.port = COM_num
             self.ser.open()
@@ -52,8 +56,8 @@ class Robot(QObject):
         if buffer is not None:
             try:
                 x, y, z = struct.unpack("3q", buffer)
-                x = x  / 6400* 10.715
-                y = y / 360 * 8 * np.pi + x
+                x = x  / 6400* 10.717
+                y = (y / 360) * 8 * np.pi + x
                 z = (z / 9000 * 360) % 360
             except:
                 pass
@@ -61,7 +65,10 @@ class Robot(QObject):
 
     def set_speed_freq(self, id, freq):
         """设置步进电机的驱动频率"""
-        msg = f":{id} {round(freq, 2)}\r\n".encode()
+        if self.mode_select == False:
+            msg = f":{id} {round(freq, 2)}+{0}\r\n".encode()
+        if self.mode_select:
+            msg = f":{id} {round(freq, 2)}+{round(freq, 2)}\r\n".encode()
         if self.ser.isOpen():
             self.write_lock.acquire()
             try:
@@ -71,18 +78,18 @@ class Robot(QObject):
             self.write_lock.release()
         else:
             print(msg)
-    
+
     def set_speed(self, id, spd, is_geared=True):
         """设置某一轴的速度"""
-        
         if is_geared:
             spd = self.gear_level * spd
         if self.flags[id]:    
-          self.spd_signal.emit(id, spd)
-          self.set_speed_freq(id, spd)
+            self.spd_signal.emit(id, spd)
+            self.set_speed_freq(id, spd)
         else:
-          self.spd_signal.emit(id, 0)  
-          self.set_speed_freq(id, 0)   
+            self.spd_signal.emit(id, 0)  
+            self.set_speed_freq(id, 0) 
+                   
 
     
     def scan_ports(self):

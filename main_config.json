@@ -2,12 +2,12 @@
     "disable_states": [
         false,
         false,
-        true
+        false
     ],
     "end_char": 3,
-    "gear_level": 2,
-    "last_joy": 1,
-    "last_port": 0,
+    "gear_level": 3,
+    "last_joy": 2,
+    "last_port": 3,
     "skin_mode": "MaterialDark",
     "step_levels": [
         0,
@@ -15,11 +15,12 @@
         0
     ],
     "temp_joys_list": [
-        "PS4 Controller"
+        "PS4 Controller",
+        "Oray VHID"
     ],
     "temp_ports_list": [
-        "COM12",
+        "COM3",
         "COM1",
-        "COM23"
+        "COM5"
     ]
 }

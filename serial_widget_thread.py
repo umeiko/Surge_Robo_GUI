@@ -86,14 +86,13 @@ class msg_fresh_thr(threading.Thread):
         self.worker = jump_worker()
         self.isRunning = True
         self.lock = threading.Lock()
-        
         self.stepsQueues = [deque(),deque(),deque()]
         self.freshText = False
         self.pause = False
         self.portDialog = portDialog
         self.cursor = portDialog.recv_Text.textCursor()
         
-    def addStep(self, id:int, spd:float, delay_time:float):
+    def addStep(self, id, spd, delay_time):
         '''添加一个【单步前进】任务，输入电机号，单步速度与单步时间'''
         self.lock.acquire()
         self.stepsQueues[id].append((spd, delay_time))
@@ -105,7 +104,7 @@ class msg_fresh_thr(threading.Thread):
         [i.clear() for i in self.stepsQueues]
         self.lock.release()
 
-    async def runStep(self, id:int, spd:float, delay_time:float):
+    async def runStep(self, id, spd, delay_time):
         '''一个执行机器人单步运动的异步函数'''
         self.robot.set_speed(id, spd, False)
         await asyncio.sleep(delay_time)
@@ -116,7 +115,7 @@ class msg_fresh_thr(threading.Thread):
         x, y, z = self.robot.get_position()
         return x, y, z
 
-    async def loopStepRunner(self, id:int):
+    async def loopStepRunner(self, id):
         '''异步循环检查是否有需要运行的【单步指令队列】'''
         while self.isRunning:
             self.lock.acquire()
@@ -127,7 +126,7 @@ class msg_fresh_thr(threading.Thread):
                 await self.runStep(*args)
             else:
                 self.lock.release()
-                await asyncio.sleep(0)
+                await asyncio.sleep(0.001)
     
     async def loopGetMsgRunner(self, freq=2):
         '''异步循环地获取并刷新界面'''
@@ -142,7 +141,7 @@ class msg_fresh_thr(threading.Thread):
         if self.portDialog.AutoLast.isChecked():
             try:
                 self.worker.sendCursor(self.cursor)
-            except Exception:
+            except:
                 pass
 
     async def loopReadSerial(self):

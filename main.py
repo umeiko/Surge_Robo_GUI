@@ -1,3 +1,5 @@
+import numpy as np
+import copy
 from mainwindow import Ui_MainWindow
 from portDialog import Ui_Dialog as port_dialog
 from joystickDialog import Ui_Dialog as joystick_dialog
@@ -56,7 +58,95 @@ global_options = {
     "step_levels"    : [0, 0, 0],
     "disable_states" : [True, True, True],
 }
+class Speed_Conver:
+    """速度转换矩阵表示"""
+    def __init__(self,motorId,spd):
+        self.w_MG1 = 0 # 导丝递送电机输入(°/s)
+        self.f_MG2 = 0 # 导丝旋转电机输入(Hz)
+        self.f_MC1 = 0 # 直线平台电机输入(Hz)
+        # self.f_MC2 = 0 # 导管递送电机输入(°/s)
+        self.spd = spd
+        self.motorId = motorId
+        self.theta_s1 = 1.8 # 导丝转台电机的步距角
+        self.theta_s2 = 1.8 # 直线平台电机的步距角
+        self.K = 1/18 # 导丝转台的齿比
+        self.K1 = 1/2.5 # 导丝转台电机的细分
+        self.K2 = 1/32 # 直线平台电机的细分
+        self.d1 = 8 # 单位mm  导丝递送摩擦轮直径
+        # self.d2 = 8 # 单位mm  导管递送摩擦轮直径
+        self.S = 10 # 单位mm  直线平台的导程
 
+    def submatrix(self,A,i,j):
+        #矩阵A第i行第j列元素的余矩阵
+        p=len(A)#矩阵的行数
+        q=len(A[0])#矩阵的列数
+        C=[[A[x][y] for y in range(q) if y!=j] for x in range(p) if x!=i]#列表推导式
+        return C
+
+    def det(self,A):
+        #按第一行展开递归求矩阵的行列式
+        p=len(A)#矩阵的行数
+        q=len(A[0])#矩阵的列数
+        if(p==1 and q==1):
+            return A[0][0]
+        else:
+            value=0
+            for j in range(q):
+                value+=((-1)**(j+2))*A[0][j]*self.det(self.submatrix(A,0,j))
+            return value
+        
+    def inverse(self,A):
+        p=len(A)#矩阵的行数
+        q=len(A[0])#矩阵的列数
+        C=copy.deepcopy(A)
+        d=self.det(A)
+        print(d)
+        for i in range(p):
+            for j in range(q):
+                C[i][j]=((-1)**(i+j+2))*self.det(self.submatrix(A,j,i))
+                C[i][j]=C[i][j]/d
+        print(C)
+
+    def dot_product(self,M, N):
+        c = []
+        for i in range(0, len(M)):
+            temp = []
+            for j in range(0, len(N[0])):
+                s = 0
+                for k in range(0, len(M[0])):
+                    s += M[i][k] * N[k][j]
+                temp.append(s)
+            c.append(temp)
+        return c
+
+
+    def trans(self,A):
+        """
+        矩阵转置
+        """
+        return [[A[j][i] for j in range(len(A))] for i in range(len(A[0]))]
+
+    def speed_conversion(self):
+        A_1 = [[360,0,0],
+                        [0,360/(self.theta_s1*self.K1),0],
+                        [0,0,360/(self.theta_s2*self.K2)]]
+        A_2 = [[1/(np.pi*self.d1),0,-1/(np.pi*self.d1)],
+                       [0,1/(self.K*360),0],
+                       [0,0,1/self.S]]
+        temp = self.inverse(self.dot_product(A_1,A_2))
+        if(self.motorId == 0):
+            self.f_MC1 = self.spd
+        if(self.motorId == 1):
+            self.w_MG1 = self.spd
+        if(self.motorId == 2):
+            self.f_MG2 = self.spd
+        y= self.trans([self.w_MG1,self.f_MG2,self.f_MC1*14*np.pi])
+        speed_cop = self.dot_product(temp,y) # 导丝速度（mm/s），导丝旋转速度(°/s)，导管速度(mm/s)
+        main_window.speed_UI_list[0].display(round(-speed_cop[2],3))
+        main_window.speed_UI_list[1].display(round(-speed_cop[0],3))
+        main_window.speed_UI_list[2].display(round(-speed_cop[1],3))
+        if SurgRobot.mode_select :
+            main_window.speed_UI_list[1].display(0)
 
 def fresh_ports():
     """刷新系统当前连接的串口设备"""
@@ -108,6 +198,11 @@ def func_for_select_port(*args):
         SurgRobot.close_robot_port()
     global_options["last_port"] = index
 
+def WrittingNotOfOther(id):
+    if id == 1:
+        SurgRobot.mode_select = 1
+    else:
+        SurgRobot.mode_select = 0    
 
 def func_for_show_joysticks(*args):
     """展示手柄的函数"""
@@ -136,6 +231,8 @@ def func_for_send_serial_msg(*args):
     msg += endings[dialog_port.end_select.currentIndex()]
     SurgRobot.write_ser(msg)
     dialog_port.send_Input.clear()
+
+
 
 # def open_serial_thread():
 #     """打开监听串口的后台线程"""
@@ -378,6 +475,8 @@ def bind_methods():
     main_window.cath_disable_button.clicked.connect(lambda: disable_swicher(0))
     main_window.wire_disable_button.clicked.connect(lambda: disable_swicher(1))
     main_window.wire_rot_disable_button.clicked.connect(lambda: disable_swicher(2))
+    main_window.cath_mode_select.currentIndexChanged.connect(
+                            lambda: WrittingNotOfOther(main_window.cath_mode_select.currentIndex()))  # 点击下拉列表，触发对应事件
 
 
 def close_methods(*args):

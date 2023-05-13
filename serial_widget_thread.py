@@ -127,7 +127,7 @@ class msg_fresh_thr(threading.Thread):
                 await self.runStep(*args)
             else:
                 self.lock.release()
-                await asyncio.sleep(0)
+                await asyncio.sleep(0.001)
     
     async def loopGetMsgRunner(self, freq=2):
         '''异步循环地获取并刷新界面'''

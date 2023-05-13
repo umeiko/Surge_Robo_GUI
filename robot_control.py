@@ -1,3 +1,4 @@
+import numpy as np
 import serial
 import serial.tools.list_ports
 import struct
@@ -19,6 +20,8 @@ class Robot(QObject):
         self.ser.baudrate = 115200
         self.ser.timeout = 0.005
         self.gear_level  = 0.2
+        self.mo_ser_ratio = 14
+        self.mode_select = False
         if COM_num is not None:
             self.ser.port = COM_num
             self.ser.open()
@@ -54,9 +57,9 @@ class Robot(QObject):
         if buffer is not None:
             try:
                 x, y, z = struct.unpack("3q", buffer)
-                x = x / 100000 * 1.875
-                y = y / 100000 * 1.875
-                z = z / 100000 * 1.875
+                x = x  / 6400* 10.717
+                y = (y / 360) * 8 * np.pi + x
+                z = (z / 9000 * 360) % 360
             except Exception:
                 pass
         return (x, y, z)
@@ -64,10 +67,33 @@ class Robot(QObject):
     def set_speed_freq(self, id:int, freq:float):
         """设置步进电机的驱动频率"""
         msg = f":{id} {round(freq, 2)}\r\n".encode()
+        motor_freq = freq * self.mo_ser_ratio
+        """设置步进电机的驱动频率"""
+        if id == 1:
+            msg = f":{3} {round(freq, 2)}\r\n".encode() #伺服电机2运动
+        elif id == 2:
+            msg = f":{1} {round(freq, 2)}\r\n".encode() #旋转平台运动
         if self.ser.isOpen():
             self.write_lock.acquire()
             try:
-                self.ser.write(msg)
+                if self.mode_select == False: #导管导丝协同
+                    if id == 0:
+                        msg_motor = f":{0} {round(-motor_freq, 2)}\r\n".encode()
+                        msg_servo0 = f":{2} {round(freq, 2)}\r\n".encode()
+                        self.ser.write(msg_motor)
+                        self.ser.write(msg_servo0)
+                    elif id != 0:
+                        self.ser.write(msg)
+                else:#导管独立行动
+                    if id == 0:
+                        msg_motor = f":{0} {round(-motor_freq, 2)}\r\n".encode()
+                        msg_servo0 = f":{2} {round(freq, 2)}\r\n".encode()
+                        msg_servo1 = f":{3} {round(-freq, 2)}\r\n".encode()
+                        self.ser.write(msg_motor)
+                        self.ser.write(msg_servo0)
+                        self.ser.write(msg_servo1)
+                    elif id != 0:
+                        self.ser.write(msg)
             except BaseException as e:
                 self.port_erro_signal.emit(str(e))
             self.write_lock.release()

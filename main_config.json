@@ -6,19 +6,20 @@
     ],
     "end_char": 0,
     "gear_level": 0,
-    "last_joy": 0,
-    "last_port": 4,
+    "last_joy": 1,
+    "last_port": 3,
     "skin_mode": "classic",
     "step_levels": [
         0,
         0,
         0
     ],
-    "temp_joys_list": [],
+    "temp_joys_list": [
+        "PS4 Controller"
+    ],
     "temp_ports_list": [
-        "COM1",
         "COM3",
-        "COM4",
-        "COM5"
+        "COM1",
+        "COM4"
     ]
 }
